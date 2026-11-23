@@ -53,6 +53,10 @@ Hinweis: YouTube selbst war aus dieser Arbeitsumgebung nicht erreichbar. Die Zah
 | SM08_1_vs_100.mp4 | Short | 1 starker Typ gegen 100 beim Tauziehen, alle 5 s kommen 10 dazu. Pointe: Er lässt einfach los. |
 | SM09_obstacle_race_16x9.mp4 | normal | 8 Strichmännchen im Hindernisrennen (Hürden, Schlamm, Mauer), Live-Rangliste, Fotofinish mit 0,03 s. |
 | SM10_parkour_10_levels_16x9.mp4 | normal | Neon-Parkour durch 10 Levels, Fehlversuche, Versuchszähler, Zeitlupe beim letzten Sprung. |
+| SM09_obstacle_race_short.mp4 | Short | Das Hindernisrennen als Short: herangezoomte Strecke, Rangliste darunter. |
+| SM10_parkour_10_levels_short.mp4 | Short | Der Parkour als Short: Die Kamera folgt der Figur durch jedes Level. |
+
+Damit gibt es alle 10 Ideen als Shorts (SM01–SM08 plus die beiden `_short`-Versionen).
 
 Bei allen Videos steht die Frage oder der Aufhänger von der ersten Sekunde an im Bild.
 Die Auflösung kommt erst nach Sekunde 50; am Ende steht eine Frage an die Zuschauer, damit sie kommentieren.
@@ -95,7 +99,7 @@ Count the fails 😅 How many attempts would you need? #stickman #parkour #anima
 
 ```bash
 pip install pycairo numpy   # einmalig; ffmpeg muss installiert sein
-cd stickman && ./render_all.sh   # erzeugt alle 10 Videos nach stickman_videos/
+cd stickman && ./render_all.sh && ./render_shorts.sh   # erzeugt alle Videos nach stickman_videos/
 ```
 
 `stickman/stick.py` enthält die Figur mit Gelenken, die Posen und die Bewegungsabläufe (Gehen, Rennen,

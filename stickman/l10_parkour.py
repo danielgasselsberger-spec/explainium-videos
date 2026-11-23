@@ -86,6 +86,8 @@ FAIL_TIMES = [s[0] for s in SEGS if s[3] == "fall"]
 
 
 def seg_at(t):
+    if t < SEGS[0][0]:
+        return SEGS[0]
     for s in SEGS:
         if s[0] <= t < s[1]:
             return s
@@ -118,10 +120,48 @@ def neon_rect(c, x0, y0, x1, y1, col):
     c.fill()
 
 
+PORTRAIT = False
+PW, PH = 1080, 1920
+P_DY = 560  # world GY 820 -> portrait 1380
+
+
+def stick_x(t):
+    t0, t1, li, kind, x0, y0, x1, y1, attempt, extra = seg_at(t)
+    u = max(0.0, (t - t0) / max(1e-6, t1 - t0)) if t < T_END else 1.0
+    if kind in ("run", "jump", "jumpfail", "fall"):
+        return x0 + (x1 - x0) * u
+    return 60 if kind == "respawn" else 1920
+
+
+_cam = [0.0, -1.0]
+
+
 def frame(c, t):
+    if not PORTRAIT:
+        world(c, t)
+        hud(c, t, W)
+        return
+    target = min(1920 - PW, max(0.0, stick_x(t) - 380))
+    kind = seg_at(t)[3]
+    if kind in ("respawn", "clear") or _cam[1] < 0 or t < _cam[1]:
+        _cam[0] = target if kind != "clear" else _cam[0]
+    else:
+        _cam[0] += (target - _cam[0]) * 0.25
+    _cam[1] = t
+    c.save()
+    c.translate(-_cam[0], P_DY)
+    world(c, t)
+    c.restore()
+    c.set_source_rgb(0.05, 0.02, 0.1)
+    c.rectangle(0, H + P_DY, PW, PH)
+    c.fill()
+    hud(c, t, PW)
+
+
+def world(c, t):
     s = seg_at(t)
     t0, t1, li, kind, x0, y0, x1, y1, attempt, extra = s
-    u = (t - t0) / max(1e-6, t1 - t0) if t < T_END else 1.0
+    u = max(0.0, (t - t0) / max(1e-6, t1 - t0)) if t < T_END else 1.0
     bg(c, t)
     for (a, b) in LEVELS[li]:
         neon_rect(c, a, GY, b, GY + 200, CYAN)
@@ -160,7 +200,35 @@ def frame(c, t):
         st.draw(c, pose, x, st.ground_y(pose, y), 1, expr, alpha=a)
     else:
         st.draw(c, pose, x, st.ground_y(pose, y), 1, expr)
-    # HUD
+
+
+def hud(c, t, FW):
+    t0, t1, li, kind, x0, y0, x1, y1, attempt, extra = seg_at(t)
+    if FW == PW:
+        text(c, "Can he beat", FW / 2, 170, 80, (1, 1, 1))
+        text(c, "all 10 levels?", FW / 2, 265, 80, YEL)
+        rounded(c, 40, 340, 480, 110, 22)
+        c.set_source_rgba(0, 0, 0, 0.6)
+        c.fill()
+        text(c, f"LEVEL {li + 1}/10", 280, 415, 54, CYAN)
+        rounded(c, FW - 520, 340, 480, 110, 22)
+        c.set_source_rgba(0, 0, 0, 0.6)
+        c.fill()
+        text(c, f"ATTEMPTS: {attempt}", FW - 280, 415, 54, PINK)
+        msg_y = 800
+        for k, ft in enumerate(FAIL_TIMES):
+            al = fade(t, ft, ft + 1.2, 0.15)
+            if al:
+                text(c, FAIL_LINES[k % len(FAIL_LINES)], FW / 2, msg_y, 110, PINK, alpha=al)
+        if kind == "clear":
+            text(c, f"LEVEL {li + 1} CLEAR", FW / 2, msg_y, 100, CYAN, alpha=fade(t, t0, t1, 0.15))
+        if extra == "final" and kind == "jump":
+            text(c, "SLOW MOTION", FW / 2, 640, 56, YEL, alpha=0.8)
+        if t > T_END + 0.2:
+            end_card(c, FW, PH, [("ALL 10 LEVELS!", 110, YEL), (f"in {attempt} attempts", 60, (1, 1, 1)),
+                                 ("How many would YOU need?", 44, (0.8, 0.8, 0.8))], t - T_END - 0.2)
+        return
+    W = FW
     rounded(c, 30, 30, 360, 110, 22)
     c.set_source_rgba(0, 0, 0, 0.6)
     c.fill()
@@ -204,8 +272,19 @@ def sound(a):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "short":
+        PORTRAIT = True
+        W, H = 1920, 1080
+        sys.argv.pop(1)
     if sys.argv[1] == "info":
         print("end", round(T_END, 2), "attempts", SEGS[-1][8], "fails", len(FAIL_TIMES))
     else:
         import lib
-        lib.run(sys.modules[__name__], sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+        mod = sys.modules[__name__]
+        if PORTRAIT:
+            class M:
+                W, H, DUR = PW, PH, DUR
+                frame = staticmethod(frame)
+                sound = staticmethod(sound)
+            mod = M
+        lib.run(mod, sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)

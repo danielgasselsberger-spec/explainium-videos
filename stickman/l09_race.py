@@ -116,12 +116,20 @@ def stick_for(i):
     return S.Stick(150 + i * 8, PALETTE[i])
 
 
+PORTRAIT = False
+PW, PH, PS = 1080, 1920, 1.25  # portrait frame and zoom
+P_Y0 = 640  # where world y=380 lands in portrait
+
+
 def render(out, seed, preview=None):
     from lib import Video
+    global W, H
+    FW, FH = (PW, PH) if PORTRAIT else (1920, 1080)
+    VW = PW / PS if PORTRAIT else 1920  # visible world width
     frames, events, done_t = simulate(seed)
     order = sorted(range(N), key=lambda i: done_t[i] if done_t[i] is not None else 1e9 - frames[-1][0][i])
     win = order[0]
-    v = Video(out, W, H, DUR, preview, 120)
+    v = Video(out, FW, FH, DUR, preview, 120)
     a = v.audio
     a.music(0, 60, bpm=138, chords=((0, 4, 7), (5, 9, 12), (7, 11, 14), (9, 12, 16)), root=220.0, vol=0.6)
     a.add(1.2, "beep", 880, 0.3)
@@ -138,14 +146,25 @@ def render(out, seed, preview=None):
         lead = sorted(xs, reverse=True)
         target = (lead[0] + lead[1] + lead[2]) / 3
         cam += (target - cam) * 0.08
-        sx0 = cam - 1000
+        sx0 = cam - (VW * 0.62 if PORTRAIT else 1000)
         c = v.ctx()
-        g = cairo.LinearGradient(0, 0, 0, 560)
-        g.add_color_stop_rgb(0, 0.5, 0.75, 1.0)
-        g.add_color_stop_rgb(1, 0.85, 0.93, 1.0)
-        c.set_source(g)
-        c.rectangle(0, 0, W, 560)
-        c.fill()
+        if PORTRAIT:
+            g = cairo.LinearGradient(0, 0, 0, P_Y0)
+            g.add_color_stop_rgb(0, 0.35, 0.62, 0.95)
+            g.add_color_stop_rgb(1, 0.85, 0.93, 1.0)
+            c.set_source(g)
+            c.paint()
+            c.save()
+            c.translate(0, P_Y0 - 380 * PS)
+            c.scale(PS, PS)
+        W = VW
+        if not PORTRAIT:
+            g = cairo.LinearGradient(0, 0, 0, 560)
+            g.add_color_stop_rgb(0, 0.5, 0.75, 1.0)
+            g.add_color_stop_rgb(1, 0.85, 0.93, 1.0)
+            c.set_source(g)
+            c.rectangle(0, 0, W, 560)
+            c.fill()
         c.set_source_rgb(0.6, 0.8, 0.6)
         for k in range(12):
             hx = (k * 420 - sx0 * 0.3) % 5040 - 400
@@ -230,6 +249,14 @@ def render(out, seed, preview=None):
                 st.draw(c, pose, X, yy - st.w, 1, expr)
             else:
                 st.draw(c, pose, X, st.ground_y(pose, yy), 1, expr)
+        W = FW
+        rank = sorted(range(N), key=lambda i: (done_t[i] if done_t[i] is not None and done_t[i] <= t else 1e9,
+                                               -xs[i]))
+        if PORTRAIT:
+            c.restore()
+            hud_portrait(c, t, xs, rank, done_t, win, order, trip_caps)
+            v.emit(f)
+            continue
         # HUD: title, progress, ranking
         rounded(c, 30, 24, 1180, 120, 24)
         c.set_source_rgba(0, 0, 0, 0.55)
@@ -275,7 +302,54 @@ def render(out, seed, preview=None):
     v.finish()
 
 
+def hud_portrait(c, t, xs, rank, done_t, win, order, trip_caps):
+    W, H = PW, PH
+    track_bot = P_Y0 + (1080 - 380) * PS
+    c.set_source_rgb(0.12, 0.1, 0.14)
+    c.rectangle(0, track_bot, W, H - track_bot)
+    c.fill()
+    rounded(c, 40, 80, W - 80, 190, 30)
+    c.set_source_rgba(0, 0, 0, 0.55)
+    c.fill()
+    text(c, "8 stickmen. 1 obstacle course.", W / 2, 150, 58)
+    text(c, "Pick your color NOW!", W / 2, 230, 62, (1, 0.82, 0.25))
+    c.set_source_rgba(1, 1, 1, 0.85)
+    rounded(c, 60, 300, W - 120, 16, 8)
+    c.fill()
+    for i in range(N):
+        c.set_source_rgb(*PALETTE[i])
+        c.arc(60 + (W - 120) * min(1, xs[i] / L), 308, 15, 0, 2 * math.pi)
+        c.fill()
+    text(c, "START", 60, 360, 28, (0.15, 0.2, 0.35), align="left")
+    text(c, "FINISH", W - 60, 360, 28, (0.15, 0.2, 0.35), align="right")
+    for r, i in enumerate(rank):
+        col_x = 70 if r < 4 else W / 2 + 20
+        yy = track_bot + 90 + (r % 4) * 78
+        c.set_source_rgb(*PALETTE[i])
+        c.arc(col_x + 20, yy - 15, 20, 0, 2 * math.pi)
+        c.fill()
+        label = f"{r + 1}. {NAMES[i]}"
+        if done_t[i] is not None and t >= done_t[i]:
+            label += f"  {done_t[i] - 2:.2f}s"
+        text(c, label, col_x + 55, yy, 40, (1, 1, 1), align="left")
+    if t < 2.2:
+        text(c, "GO!" if t >= 1.9 else "READY...", W / 2, 520, 120, (1, 1, 1))
+    for t_, i in trip_caps:
+        if 0 <= t - t_ < 1.6 and t_ < done_t[win]:
+            caption(c, f"{NAMES[i]} tripped!", W / 2, 520, 56, 900, alpha=fade(t, t_, t_ + 1.6))
+            break
+    wt = done_t[win]
+    if t > wt + 2.5:
+        second = order[1]
+        end_card(c, W, H, [(f"{NAMES[win].upper()} WINS!", 120, PALETTE[win]),
+                           (f"by {done_t[second] - wt:.2f} s over {NAMES[second]}", 56, (1, 1, 1)),
+                           ("Did your color win?", 44, (0.8, 0.8, 0.8))], t - wt - 2.5)
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "short":
+        PORTRAIT = True
+        sys.argv.pop(1)
     if sys.argv[1] == "search":
         search()
     else:
