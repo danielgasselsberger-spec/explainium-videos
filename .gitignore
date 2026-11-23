@@ -3,3 +3,4 @@ tools/*.wav
 .remotion/
 stills/
 out/*.log
+out/preview/

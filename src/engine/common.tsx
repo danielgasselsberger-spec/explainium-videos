@@ -1,6 +1,7 @@
 import React from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as PP from "postprocessing";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import * as THREE from "three";
 
 export type CamSpec = { pos: number[]; target: number[]; fov?: number; roll?: number };
@@ -79,3 +80,15 @@ export const PostFX: React.FC = () => {
   }, 1);
   return null;
 };
+
+// studio reflection map for metal / car paint materials (assign as material.envMap)
+let _env: { gl: THREE.WebGLRenderer; tex: THREE.Texture } | null = null;
+export function useEnvMap() {
+  const gl = useThree((s) => s.gl);
+  if (!_env || _env.gl !== gl) {
+    const pm = new THREE.PMREMGenerator(gl);
+    _env = { gl, tex: pm.fromScene(new RoomEnvironment(), 0.04).texture };
+    pm.dispose();
+  }
+  return _env.tex;
+}

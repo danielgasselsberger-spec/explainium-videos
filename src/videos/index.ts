@@ -1,4 +1,5 @@
 // Registry of all videos. The /video skill adds one line per new video.
 import { science01 } from "./science01/Video";
+import { science02 } from "./science02/Video";
 
-export const VIDEOS = [science01];
+export const VIDEOS = [science01, science02];

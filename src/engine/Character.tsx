@@ -64,6 +64,14 @@ export function solveArm(S: THREE.Vector3, W: THREE.Vector3, pole: THREE.Vector3
   return { E, W: Wc };
 }
 
+// hand position + forearm direction (for props held in the hand). side "l" = screen-right arm
+export function handFrame(p: Pose, side: "l" | "r" = "l") {
+  const S = side === "l" ? SH_L : SH_R;
+  const { E, W } = solveArm(S, new THREE.Vector3(...(side === "l" ? p.lw : p.rw)), new THREE.Vector3(...(side === "l" ? p.lp : p.rp)));
+  const dir = W.clone().sub(E).normalize();
+  return { hand: W.clone().add(dir.clone().multiplyScalar(0.2)), dir, elbow: E, wrist: W };
+}
+
 // world-space point on the bruise (used for camera targets & ice/finger placement)
 export const BRUISE_ALONG = 0.62; // fraction from elbow to wrist
 export function bruisePoint(p: Pose) {
