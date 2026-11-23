@@ -86,7 +86,7 @@ export const Car: React.FC<CarState & { m: FM; position?: any; rotation?: any; s
   headMat.emissiveIntensity = 0.2 + lights * 3;
   const drops = useMemo(() => {
     const r = rng(4);
-    return Array.from({ length: 120 }, () => ({ p: v((r() - 0.5) * 3.8, 0.5 + r() * 1.0, (r() > 0.5 ? 1 : -1) * 0.94), s: 0.03 + r() * 0.05, sp: r() }));
+    return Array.from({ length: 120 }, () => ({ p: v((r() - 0.5) * 3.8, 0.5 + r() * 1.0, (r() > 0.5 ? 1 : -1) * 0.94), s: 0.015 + r() * 0.03, sp: r() }));
   }, []);
   const dropMat = useMemo(() => new THREE.MeshPhysicalMaterial({ color: "#bff6ff", roughness: 0, transmission: 0, transparent: true, opacity: 0.8, clearcoat: 1, emissive: new THREE.Color("#5fd8ff"), emissiveIntensity: 0.4 }), []);
   const sph = useMemo(() => new THREE.SphereGeometry(1, 10, 8), []);

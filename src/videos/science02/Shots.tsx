@@ -530,7 +530,7 @@ export const Marriage: React.FC<S & { phase: 0 | 1 | 2 }> = ({ cam: camO, t, d, 
   const chassisY = lerp(-3.2, 0, rise);
   const cam0 =
     phase === 0 ? { pos: [lerp(4, 2, k), lerp(-1.6, -1.0, k), lerp(7, 6.5, k)], target: [0, -0.4, 0], fov: 42 }
-    : phase === 1 ? { pos: [lerp(1.8, 0.8, k), lerp(-0.2, 0.0, k), lerp(4.0, 3.4, k)], target: [1, 0.3, 0.6], fov: 40 }
+    : phase === 1 ? { pos: [lerp(4.2, 2.6, k), lerp(0.4, 0.6, k), lerp(6.5, 5.6, k)], target: [0.6, 0.4, 0.4], fov: 40 }
     : { pos: [Math.sin(lerp(-0.8, 0.8, k)) * 8, lerp(2.5, 1.8, k), Math.cos(lerp(-0.8, 0.8, k)) * 8], target: [0, 0.8, 0], fov: 40 };
   const bolts = [[1.4, 0.3, 0.6], [1.4, 0.3, -0.6], [-1.3, 0.3, 0.6], [-1.3, 0.3, -0.6]];
   return (
@@ -664,7 +664,7 @@ export const WaterTest: React.FC<S & { close?: boolean }> = ({ cam: camO, t, d, 
     return { p: v(j.x, 5 - age * 4.2, j.z), r: new THREE.Euler(0, 0, 0.1), s: 1 };
   });
   const cam0 = close
-    ? { pos: [lerp(2.6, 1.6, k), lerp(1.2, 1.0, k), lerp(2.6, 2.0, k)], target: [0.6, 0.9, 0.95], fov: 38 }
+    ? { pos: [lerp(3.6, 2.4, k), lerp(1.8, 1.4, k), lerp(4.4, 3.6, k)], target: [0.5, 0.9, 0.9], fov: 38 }
     : { pos: [lerp(-5, 4, k), lerp(1.8, 2.6, k), lerp(7.5, 7.0, k)], target: [0, 1, 0], fov: 42 };
   const scan = range(t, 0.3, d - 0.2);
   return (
@@ -692,7 +692,7 @@ export const AssemblyLine: React.FC<S & { exit?: boolean }> = ({ cam: camO, t, d
   const cars = [0, 1, 2, 3, 4, 5].map((i) => -i * 6 + ((t * speed) % 6));
   const rib = useMemo(() => new THREE.MeshStandardMaterial({ color: "#3a2a6a", metalness: 0.5, roughness: 0.4 }), []);
   const cam0 = exit
-    ? { pos: [lerp(5, 3.5, k), lerp(1.0, 1.4, k), lerp(6, 4.5, k)], target: [lerp(2, 5, k), 0.8, 0], fov: 40 }
+    ? { pos: [lerp(7, 5.5, k), lerp(2.4, 2.0, k), lerp(10, 8.5, k)], target: [lerp(1.5, 4, k), 0.8, 0], fov: 40 }
     : { pos: [lerp(-8, -2, k), lerp(5, 3.5, k), lerp(9, 8, k)], target: [lerp(-6, 0, k), 0.5, 0], fov: 42 };
   return (
     <World cam={camO ?? cam0} t={t} top="#a01a8a" bottom="#120430" bloom={1.3} fog="#3a0a5a">
