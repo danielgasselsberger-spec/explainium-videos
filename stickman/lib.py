@@ -54,6 +54,48 @@ class Audio:
             t = np.arange(n) / SR
             s = (np.sin(2 * np.pi * freq * t) + 0.3 * np.sign(np.sin(2 * np.pi * freq * t)) * 0.3) \
                 * np.minimum(1, t * 800) * np.exp(-t * 35)
+        elif kind == "whoosh":
+            n = int(SR * 0.45)
+            t = np.arange(n) / SR
+            rng = np.random.default_rng(7)
+            noise = rng.standard_normal(n)
+            k = int(max(2, freq / 100))
+            noise = np.convolve(noise, np.ones(k) / k, mode="same")
+            env = np.sin(np.pi * np.minimum(1, t / 0.45)) ** 2
+            s = noise * env * 1.6
+        elif kind == "thud":
+            n = int(SR * 0.35)
+            t = np.arange(n) / SR
+            f = freq * (1 + 2 * np.exp(-t * 30))
+            s = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 12)
+            rng = np.random.default_rng(3)
+            s += 0.4 * rng.standard_normal(n) * np.exp(-t * 60)
+        elif kind == "kick":
+            n = int(SR * 0.25)
+            t = np.arange(n) / SR
+            f = 50 * (1 + 3 * np.exp(-t * 40))
+            s = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 14)
+        elif kind == "hat":
+            n = int(SR * 0.05)
+            t = np.arange(n) / SR
+            rng = np.random.default_rng(5)
+            x = rng.standard_normal(n)
+            s = (x - np.concatenate([[0], x[:-1]])) * np.exp(-t * 90) * 0.5
+        elif kind == "snare":
+            n = int(SR * 0.2)
+            t = np.arange(n) / SR
+            rng = np.random.default_rng(9)
+            s = rng.standard_normal(n) * np.exp(-t * 25) * 0.7 + np.sin(2 * np.pi * 190 * t) * np.exp(-t * 30) * 0.5
+        elif kind == "bass":
+            n = int(SR * 0.4)
+            t = np.arange(n) / SR
+            s = (np.sin(2 * np.pi * freq * t) + 0.3 * np.sin(4 * np.pi * freq * t)) * np.exp(-t * 4) \
+                * np.minimum(1, t * 300)
+        elif kind == "keys":
+            n = int(SR * 0.9)
+            t = np.arange(n) / SR
+            s = (np.sin(2 * np.pi * freq * t) + 0.25 * np.sin(4 * np.pi * freq * t)) * np.exp(-t * 3.2) \
+                * np.minimum(1, t * 200)
         elif kind == "tick":
             n = int(SR * 0.06)
             t = np.arange(n) / SR
@@ -92,6 +134,29 @@ class Audio:
         env = np.minimum(1, t / 2.0) * np.minimum(1, (dur - t) / 2.0)
         s = sum(np.sin(2 * np.pi * f * t + k) for k, f in enumerate(freqs))
         self.buf[i0:i1] += s * env * vol
+
+    def music(self, t0, t1, bpm=100, chords=((0, 4, 7), (9, 12, 16), (5, 9, 12), (7, 11, 14)), root=220.0,
+              vol=0.5, drums=True, swing=0.0):
+        """Simple loop: kick/snare/hat, bass root notes, keyboard chords. One chord per bar."""
+        beat = 60.0 / bpm
+        t = t0
+        b = 0
+        while t < t1:
+            bar = b // 4
+            ch = chords[bar % len(chords)]
+            f0 = root * 2 ** (ch[0] / 12)
+            if drums:
+                self.add(t, "kick" if b % 2 == 0 else "snare", 0, 0.22 * vol)
+                self.add(t + beat / 2 + swing * beat, "hat", 0, 0.12 * vol)
+            self.add(t, "bass", f0 / 2, 0.22 * vol)
+            if b % 4 == 0:
+                for n in ch:
+                    self.add(t, "keys", root * 2 ** (n / 12), 0.07 * vol)
+            if b % 4 == 2:
+                for n in ch:
+                    self.add(t, "keys", root * 2 ** (n / 12) * 2, 0.04 * vol)
+            t += beat
+            b += 1
 
     def write(self, path, dur):
         x = self.buf[: int(SR * dur)]
@@ -170,6 +235,7 @@ def text(c, s, x, y, size, rgb=(1, 1, 1), bold=True, align="center", alpha=1.0):
     c.move_to(x, y)
     c.set_source_rgba(*rgb, alpha)
     c.show_text(s)
+    c.new_path()
     return ext.x_advance
 
 
@@ -226,3 +292,137 @@ def end_card(c, W, H, lines, t_in):
         y += size * 1.1
         text(c, s, W / 2, y, size, rgb, alpha=a)
         y += size * 0.25
+
+
+def rounded(c, x, y, w, h, r):
+    c.new_path()
+    c.arc(x + w - r, y + r, r, -math.pi / 2, 0)
+    c.arc(x + w - r, y + h - r, r, 0, math.pi / 2)
+    c.arc(x + r, y + h - r, r, math.pi / 2, math.pi)
+    c.arc(x + r, y + r, r, math.pi, 1.5 * math.pi)
+    c.close_path()
+
+
+def wrap(c, s, size, maxw):
+    c.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    c.set_font_size(size)
+    words, lines, cur = s.split(), [], ""
+    for w in words:
+        test = (cur + " " + w).strip()
+        if c.text_extents(test).x_advance > maxw and cur:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = test
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def caption(c, s, cx, y, size, maxw, fg=(1, 1, 1), box=(0, 0, 0), box_alpha=0.72, alpha=1.0, hl=None):
+    """Bold caption in a rounded box, wrapped to maxw. hl = word to color yellow."""
+    lines = wrap(c, s, size, maxw)
+    lh = size * 1.18
+    widths = [c.text_extents(l).x_advance for l in lines]
+    bw = max(widths) + size * 0.9
+    bh = lh * len(lines) + size * 0.5
+    rounded(c, cx - bw / 2, y - size * 0.95, bw, bh, size * 0.3)
+    c.set_source_rgba(*box, box_alpha * alpha)
+    c.fill()
+    for i, l in enumerate(lines):
+        x = cx - widths[i] / 2
+        for word in l.split(" "):
+            col = (1, 0.82, 0.25) if hl and word.strip(".,!?").lower() == hl.lower() else fg
+            c.move_to(x, y + i * lh)
+            c.set_source_rgba(*col, alpha)
+            c.show_text(word + " ")
+            x += c.text_extents(word + " ").x_advance
+    c.new_path()
+
+
+def timeline(t, beats):
+    """beats: list of (start, end, payload). Returns (payload, local_t, local_u) of the active beat or None."""
+    for s, e, p in beats:
+        if s <= t < e:
+            return p, t - s, (t - s) / (e - s)
+    return None, 0.0, 0.0
+
+
+PAPER = (0.96, 0.95, 0.91)
+INK = (0.1, 0.1, 0.12)
+
+
+def paper(c, W, H):
+    c.set_source_rgb(*PAPER)
+    c.paint()
+    c.set_source_rgba(0.55, 0.65, 0.85, 0.18)
+    c.set_line_width(2)
+    y = 60
+    while y < H:
+        c.move_to(0, y)
+        c.line_to(W, y)
+        y += 64
+    c.stroke()
+
+
+def bubble(c, x, y, s, size=40, maxw=520, tail=None, think=False, alpha=1.0, fg=INK, bg=(1, 1, 1)):
+    """Speech/thought bubble centered at x, top at y. tail=(tx, ty) points at the speaker."""
+    lines = wrap(c, s, size, maxw)
+    lh = size * 1.2
+    widths = [c.text_extents(l).x_advance for l in lines]
+    bw = max(widths) + size * 1.2
+    bh = lh * len(lines) + size * 0.8
+    bx, by = x - bw / 2, y
+    if tail and not think:
+        c.new_path()
+        c.move_to(x - size * 0.4, by + bh - 2)
+        c.line_to(*tail)
+        c.line_to(x + size * 0.4, by + bh - 2)
+        c.close_path()
+        c.set_source_rgba(*bg, alpha)
+        c.fill_preserve()
+        c.set_source_rgba(*fg, alpha)
+        c.set_line_width(3)
+        c.stroke()
+    if tail and think:
+        tx, ty = tail
+        for k, r in enumerate((6, 10, 15)):
+            u = (k + 1) / 4
+            cx_, cy_ = tx + (x - tx) * u, ty + (by + bh - ty) * u
+            c.new_path()
+            c.arc(cx_, cy_, r, 0, 2 * math.pi)
+            c.set_source_rgba(*bg, alpha)
+            c.fill_preserve()
+            c.set_source_rgba(*fg, alpha)
+            c.set_line_width(3)
+            c.stroke()
+    rounded(c, bx, by, bw, bh, size * (0.9 if think else 0.45))
+    c.set_source_rgba(*bg, alpha)
+    c.fill_preserve()
+    c.set_source_rgba(*fg, alpha)
+    c.set_line_width(3)
+    c.stroke()
+    c.set_source_rgba(*fg, alpha)
+    for i, l in enumerate(lines):
+        c.move_to(x - widths[i] / 2, by + size * 0.4 + size + i * lh - size * 0.15)
+        c.show_text(l)
+    c.new_path()
+    return bh
+
+
+def fade(t, t0, t1, edge=0.3):
+    """1 inside [t0, t1] with soft edges."""
+    if t < t0 or t > t1:
+        return 0.0
+    return min(1.0, (t - t0) / edge, (t1 - t) / edge)
+
+
+def run(mod, out, preview=None):
+    v = Video(out, mod.W, mod.H, mod.DUR, preview, 120)
+    mod.sound(v.audio)
+    for f in range(v.nframes):
+        t = f / FPS
+        c = v.ctx()
+        mod.frame(c, t)
+        v.emit(f)
+    v.finish()
