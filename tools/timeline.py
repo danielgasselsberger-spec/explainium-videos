@@ -8,6 +8,15 @@ FPS = 30
 raw = [l.strip() for l in open(f"scripts/{slug}/script.txt") if l.strip()]
 commands = {i for i, l in enumerate(raw) if l.startswith(">")}
 d = json.load(open(f"scripts/{slug}/words_raw.json"))
+# edge-tts sometimes merges words into one boundary ("Now drive") -> split evenly
+for s_ in d:
+    out = []
+    for w in s_["words"]:
+        parts = w["w"].split()
+        n = len(parts)
+        for j, p in enumerate(parts):
+            out.append({"w": p, "s": w["s"] + (w["e"] - w["s"]) * j / n, "e": w["s"] + (w["e"] - w["s"]) * (j + 1) / n})
+    s_["words"] = out
 CH = [l.strip() for l in open(f"scripts/{slug}/chunks.txt") if l.strip()]
 assert len(CH) == len(d), f"chunks.txt has {len(CH)} lines, script has {len(d)}"
 gaps = []

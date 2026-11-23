@@ -17,8 +17,16 @@ async def one(i, text):
             elif ch["type"] == "WordBoundary":
                 words.append({"w": ch["text"], "s": ch["offset"] / 1e7, "e": (ch["offset"] + ch["duration"]) / 1e7})
     return {"text": text, "words": words}
+async def retry(i, text):
+    for k in range(5):
+        try:
+            return await one(i, text)
+        except Exception as e:
+            print("retry", i, k, type(e).__name__)
+            await asyncio.sleep(2 + k * 3)
+    raise SystemExit(f"TTS failed for line {i}")
 async def main():
-    out = [await one(i, t) for i, t in enumerate(lines)]
+    out = [await retry(i, t) for i, t in enumerate(lines)]
     json.dump(out, open(f"scripts/{slug}/words_raw.json", "w"), indent=1)
     print(len(out), "sentences")
 asyncio.run(main())

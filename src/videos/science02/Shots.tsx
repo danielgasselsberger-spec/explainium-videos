@@ -108,7 +108,7 @@ export const World: React.FC<{ cam: C; t: number; top?: string; bottom?: string;
   </>
 );
 
-const Floor: React.FC<{ color?: string; y?: number; grid?: boolean }> = ({ color = "#2a0c4a", y = 0, grid = true }) => {
+export const Floor: React.FC<{ color?: string; y?: number; grid?: boolean }> = ({ color = "#2a0c4a", y = 0, grid = true }) => {
   const mat = useMemo(() => new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.3 }), [color]);
   const lineMat = useMemo(() => new THREE.MeshBasicMaterial({ color: "#ff3fb0", toneMapped: false, transparent: true, opacity: 0.55 }), []);
   return (
