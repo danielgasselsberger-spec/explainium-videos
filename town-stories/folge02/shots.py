@@ -41,6 +41,7 @@ SHOTS = [
 
 CLEAR = (0.0, 30.0)  # clearing centre
 BLUE = '#5CF2FF'
+PRINT_EMIT = 6
 
 
 def forest(seed=13, path=True, clearing=True, n=150, moon=True):
@@ -57,7 +58,7 @@ def forest(seed=13, path=True, clearing=True, n=150, moon=True):
     while k < n:
         x = random.uniform(-24, 24)
         y = random.uniform(-6, 60)
-        if abs(x) < 2.3 and y < 25:
+        if abs(x) < 5.5 and y < 25:
             continue
         if clearing and math.hypot(x - CLEAR[0], y - CLEAR[1]) < 7.5:
             continue
@@ -165,7 +166,7 @@ def forest_mailbox(loc=(CLEAR[0], CLEAR[1], 0.0), open_door=False):
 # ------------------------------------------------------------------ shots
 def s_forest_enter(N):
     forest()
-    bm = mat(BLUE, emit=10)
+    bm = mat(BLUE, emit=PRINT_EMIT)
     print_trail('fp', (0, -1), (0, 24), 22, 1, int(N * 0.5), bm, appear=True)
     point((0, 4, 0.5), 120, (0.36, 0.95, 1.0), 'fpl1')
     point((0, 14, 0.5), 160, (0.36, 0.95, 1.0), 'fpl2')
@@ -178,7 +179,7 @@ def s_forest_enter(N):
 
 def s_forest_walk(N):
     forest()
-    bm = mat(BLUE, emit=10)
+    bm = mat(BLUE, emit=PRINT_EMIT)
     print_trail('fp', (0, 0), (0, 22), 20, 0, 0, bm, appear=False)
     point((0, 6, 0.6), 160, (0.36, 0.95, 1.0), 'fpl1')
     pip = make_pip((0, 2, 0), rot_z=math.pi)
@@ -197,7 +198,7 @@ def s_forest_walk(N):
 
 def s_prints_close(N):
     forest(n=90)
-    bm = mat(BLUE, emit=10)
+    bm = mat(BLUE, emit=PRINT_EMIT)
     print_trail('fp', (0, 0), (0, 14), 14, 0, 0, bm, appear=False)
     point((0, 2, 0.4), 60, (0.36, 0.95, 1.0), 'fpl1')
     cam = camera(lens=35)
@@ -207,7 +208,7 @@ def s_prints_close(N):
 
 def s_slippers(N):
     forest(n=90)
-    bm = mat(BLUE, emit=10)
+    bm = mat(BLUE, emit=PRINT_EMIT)
     print_trail('fp', (0, 0), (0, 12), 12, 0, 0, bm, appear=False)
     pip = make_pip((0.75, 1.2, 0))
     pip.face(1, 'worried')
@@ -260,7 +261,7 @@ def s_pip_me(N):
 
 def s_clearing(N):
     forest()
-    bm = mat(BLUE, emit=10)
+    bm = mat(BLUE, emit=PRINT_EMIT)
     print_trail('fp', (0, 16), (0, 27), 10, 0, 0, bm, appear=False)
     forest_mailbox()
     pip = make_pip((0, 20, 0), rot_z=math.pi)
@@ -358,7 +359,7 @@ def s_crunch(N):
     point((0, 36, 0.6), 80, (0.36, 0.95, 1.0), 'apl')
     cam = camera(lens=35)
     for f in range(1, N + 1, 8):
-        cam_key(cam, f, (0.9 + random.uniform(-0.03, 0.03), 26.9 + f * 0.004, 1.9), (-0.1, 36, 0.8))
+        cam_key(cam, f, (2.3 + random.uniform(-0.03, 0.03), 26.4 + f * 0.004, 1.5), (-0.2, 36, 0.5))
 
 
 def s_glow_feet(N):
@@ -407,13 +408,13 @@ def s_opt2(N):
     for i in range(40):
         x = random.uniform(-14, 14)
         y = random.uniform(-36, -18)
-        if abs(x) < 2.5:
+        if abs(x - 3.5) < 2.5:
             continue
         tree(f'ot{i}', (x, y, 0), s=random.uniform(1.2, 1.9), dark=True)
-    box('opath', (2.4, 20, 0.05), (0, -14, 0.03), mat('#4E3E2C', rough=0.9), bevel=0)
+    box('opath', (2.4, 20, 0.05), (3.5, -14, 0.03), mat('#4E3E2C', rough=0.9), bevel=0)
     cam = camera(lens=30)
-    cam_key(cam, 1, (0.5, -30, 1.7), (0, 8, 2.5))
-    cam_key(cam, N, (0.2, -22, 1.7), (0, 8, 2.5))
+    cam_key(cam, 1, (3.5, -30, 1.7), (3.5, 8, 2.5))
+    cam_key(cam, N, (3.5, -22, 1.7), (3.5, 8, 2.5))
 
 
 def s_opt3(N):
@@ -421,10 +422,11 @@ def s_opt3(N):
     bpy.context.scene.world.node_tree.nodes['Background'].inputs['Color'].default_value = hexcol('#0B1028')
     lt = empty('L2', (0, 0, 2.5))
     box('L2p', (2.6, 0.06, 1.8), (0, 0, 0), mat('#FFF1CF', rough=0.85), lt, bevel=0.02)
-    text('L2n', '2', (0, -0.05, 0.1), 1.0, mat('#2FCF63', emit=5), lt, extrude=0.02)
+    text('L2n', '2', (0, -0.06, 0.0), 1.3, mat('#1E7A3C', rough=0.5), lt, extrude=0.03)
     for sx in (-1, 1):
         box(f'flap{sx}', (1.5, 0.02, 0.06), (0.6 * sx, -0.04, 0.45), mat('#E8D7B0'), lt, bevel=0, rot=(0, 0.6 * sx, 0))
-    green_light((0, -1.5, 2.0), 380, 'g')
+    green_light((0, -1.5, 2.0), 180, 'g')
+    point((-1.5, -4, 3.5), 200, (1, 0.9, 0.75), 'key')
     random.seed(4)
     sm = mat('#7DFFA6', emit=6)
     for i in range(30):

@@ -4,6 +4,11 @@ import sys, json, numpy as np, soundfile as sf
 d = sys.argv[1]; tm = json.load(open(f'{d}/timings.json')); L = tm['lines']; T = lambda i: L[i]['start']
 SR = 48000; dur = tm['total']; n = int(dur * SR); t = np.arange(n) / SR
 rng = np.random.default_rng(3)
+import os
+CUES = json.load(open(f'{d}/cues.json')) if os.path.exists(f'{d}/cues.json') else {
+    'night_from': T(10), 'intro_until': T(4), 'heartbeat_from': T(11), 'heartbeat_until': T(19) + 6,
+    'dropout': [T(13) - 0.2, T(15)], 'risers': [[T(13) - 2.0, 2.0], [T(15) - 1.2, 1.2]],
+    'booms': [[T(13) + 0.05, 1.1], [T(11), 0.6], [T(15), 0.7], [T(4) + 1.9, 0.5]]}
 out = np.zeros((n, 2))
 def env_at(a, b, fade=1.5):
     e = np.clip((t - a) / fade, 0, 1) * np.clip((b - t) / fade, 0, 1); return e
@@ -36,20 +41,20 @@ while pos < dur - 2:
     pos += beat * (1.0 + 0.04 * np.sin(i)); i += 1  # wobbly, "broken" music box
 box = reverb(box * 0.22, 2.5, 0.45)
 box_env = np.ones(n) * 0.9
-box_env *= 1 - 0.75 * env_at(T(13) - 0.2, T(15), 0.3)   # drop out at the big reveal
+box_env *= 1 - 0.75 * env_at(CUES['dropout'][0], CUES['dropout'][1], 0.3)   # drop out at the big reveal
 out += np.stack([box * box_env] * 2, 1)
 # --- drone (enters at night part), detuned low fifth + tritone shimmer
-night = np.clip((t - T(10) + 1.0) / 3.0, 0, 1)
+night = np.clip((t - CUES['night_from'] + 1.0) / 3.0, 0, 1)
 dr = (np.sin(2 * np.pi * 55 * t) + 0.8 * np.sin(2 * np.pi * 55.4 * t) + 0.5 * np.sin(2 * np.pi * 77.8 * t)
       + 0.25 * np.sin(2 * np.pi * 155.6 * t + np.sin(2 * np.pi * 0.2 * t))) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.11 * t))
-intro = 0.35 * np.clip(t / 2, 0, 1) * np.clip((T(4) - t) / 1.5, 0, 1)
+intro = 0.35 * np.clip(t / 2, 0, 1) * np.clip((CUES['intro_until'] - t) / 1.5, 0, 1)
 out += np.stack([dr * 0.09 * np.maximum(night, intro)] * 2, 1)
 # --- wind
 wind = lowpass(rng.standard_normal(n), 0.02) * (0.5 + 0.5 * np.sin(2 * np.pi * 0.07 * t))
 out += np.stack([wind, np.roll(wind, 900)], 1) * 0.5 * np.maximum(night, intro)[:, None]
 # --- heartbeat from 3 o'clock, speeding up towards the reveal
-hb_t = T(11); bpm = 70
-while hb_t < T(19) + 6:
+hb_t = CUES['heartbeat_from']; bpm = 70
+while hb_t < CUES['heartbeat_until']:
     for off, g in ((0, 1.0), (0.22, 0.7)):
         k = np.arange(int(0.25 * SR)) / SR; s = np.sin(2 * np.pi * 48 * k) * np.exp(-k * 18) * g
         add(s * 0.9, hb_t + off)
@@ -62,10 +67,8 @@ def boom(at, g=1.0):
     k = np.arange(int(2.5 * SR)) / SR
     s = np.sin(2 * np.pi * (60 * np.exp(-k * 1.5) + 30) * k) * np.exp(-k * 1.6) + 0.4 * rng.standard_normal(len(k)) * np.exp(-k * 12)
     add(reverb(s, 2.0, 0.3) * g, at)
-riser(T(13) - 2.0, 2.0); boom(T(13) + 0.05, 1.1)        # "Tomorrow, the whole town will disappear"
-boom(T(11), 0.6)                                         # 3 o'clock
-riser(T(15) - 1.2, 1.2); boom(T(15), 0.7)                # "you have to choose"
-boom(T(4) + 1.9, 0.5)                                    # bakery explodes (comic)
+for a_, l_ in CUES['risers']: riser(a_, l_)
+for a_, g_ in CUES['booms']: boom(a_, g_)
 # --- master
 out *= np.clip((dur - t) / 2.0, 0, 1)[:, None]
 out /= np.abs(out).max() * 1.12
