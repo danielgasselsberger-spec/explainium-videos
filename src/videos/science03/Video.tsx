@@ -526,12 +526,12 @@ export const SHOTS: Shot[] = [
 ];
 
 const SFX: Sfx[] = [
-  [0.52, "thud", 0.6], [0.6, "pop", 0.35], [2.0, "whoosh", 0.4], [5.6, "timelapse", 0.25], [8.4, "shimmer", 0.35], [9.95, "clink", 0.5], [11.3, "whoosh", 0.4],
-  [13.8, "pop", 0.35], [14.1, "pop", 0.35], [14.6, "drop", 0.3], [15.6, "whoosh", 0.35], [17.45, "whoosh", 0.4], [18.4, "thud", 0.45], [23.5, "whoosh", 0.3],
-  [26.6, "whoosh", 0.35], [27.4, "drop", 0.5], [28.7, "whoosh", 0.4], [33.4, "plop", 0.4], [34.0, "plop", 0.35], [36.2, "shimmer", 0.4], [37.5, "whoosh", 0.35],
-  [39.4, "whoosh", 0.4], [43.85, "clink", 0.5], [44.5, "shimmer", 0.35], [47.0, "whoosh", 0.4], [49.55, "whoosh", 0.35], [50.3, "thud", 0.4], [51.8, "whoosh", 0.35],
-  [55.0, "shimmer", 0.3], [57.4, "thud", 0.75], [57.5, "pop", 0.5], [59.2, "whoosh", 0.35], [60.9, "whoosh", 0.45], [62.3, "drop", 0.4], [63.0, "drop", 0.35],
-  [66.5, "whoosh", 0.3], [67.2, "pop", 0.45],
+  [0.52, "thud", 0.6], [0.6, "pop", 0.35], [5.6, "timelapse", 0.25], [8.4, "shimmer", 0.35], [9.95, "clink", 0.5], 
+  [13.8, "pop", 0.35], [14.1, "pop", 0.35], [14.6, "drop", 0.3], [18.4, "thud", 0.45], 
+  [27.4, "drop", 0.5], [33.4, "plop", 0.4], [34.0, "plop", 0.35], [36.2, "shimmer", 0.4], 
+  [43.85, "clink", 0.5], [44.5, "shimmer", 0.35], [50.3, "thud", 0.4], 
+  [55.0, "shimmer", 0.3], [57.4, "thud", 0.75], [57.5, "pop", 0.5], [62.3, "drop", 0.4], [63.0, "drop", 0.35],
+  [67.2, "pop", 0.45],
 ];
 
 export const science03 = { id: "Science03", slug: "science03", frames: timeline.frames, component: makeVideo({ slug: "science03", timeline, shots: SHOTS, sfx: SFX }) };

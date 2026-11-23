@@ -64,11 +64,11 @@ export const SHOTS: Shot[] = [
 ];
 
 const SFX: Sfx[] = [
-  [0.58, "thud", 0.75], [1.95, "whoosh", 0.45], [5.15, "pop", 0.6], [5.8, "whoosh", 0.25], [8.75, "drop", 0.5], [12.0, "whoosh", 0.35],
-  [15.45, "whoosh", 0.45], [17.9, "plop", 0.45], [18.35, "plop", 0.4], [18.8, "plop", 0.4], [21.9, "shimmer", 0.4], [23.6, "clink", 0.5],
-  [24.75, "whoosh", 0.4], [29.95, "timelapse", 0.45], [32.0, "whoosh", 0.35], [34.4, "drop", 0.45], [39.37, "pop", 0.55], [40.5, "whoosh", 0.4],
-  [44.35, "timelapse", 0.45], [46.1, "whoosh", 0.35], [48.4, "plop", 0.5], [51.9, "shimmer", 0.45], [54.3, "drop", 0.5], [57.15, "whoosh", 0.35],
-  [59.0, "whoosh", 0.4], [60.45, "shimmer", 0.4],
+  [0.58, "thud", 0.75], [5.15, "pop", 0.6], [8.75, "drop", 0.5], 
+  [17.9, "plop", 0.45], [18.35, "plop", 0.4], [18.8, "plop", 0.4], [21.9, "shimmer", 0.4], [23.6, "clink", 0.5],
+  [29.95, "timelapse", 0.45], [34.4, "drop", 0.45], [39.37, "pop", 0.55], 
+  [44.35, "timelapse", 0.45], [48.4, "plop", 0.5], [51.9, "shimmer", 0.45], [54.3, "drop", 0.5], 
+  [60.45, "shimmer", 0.4],
 ];
 
 export const science01 = { id: "Science01", slug: "science01", frames: timeline.frames, component: makeVideo({ slug: "science01", timeline, shots: SHOTS, sfx: SFX }) };

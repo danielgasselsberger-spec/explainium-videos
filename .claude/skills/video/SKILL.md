@@ -56,7 +56,7 @@ Copy the structure of science01: `Video.tsx` exports `export const <slug> = { id
 - `common.tsx`: `Cam` (pos/target/fov/roll/shake), `StudioLights`, `MacroLights`, `Post`.
 - `lib.ts`: `range, smooth, easeIn/Out/InOut, lerp, lerpV, mixColor, rng(seed), noise3`.
 
-**SFX** (`public/sfx`: plop, whoosh, drop, thud, pop, clink, shimmer, timelapse): whoosh on zoom transitions, a hit sound on the hook action, plop/drop/pop on visual events, shimmer on reveals. Volume 0.25–0.75. Music `public/musik.mp3` is mixed automatically (≈10 % under voice, ≈20 % in pauses, fades). New sounds: extend `tools/audio_synth.py`.
+**SFX** (`public/sfx`: plop, drop, thud, pop, clink, shimmer, timelapse): a hit sound on the hook action, plop/drop/pop on visual events, shimmer on reveals. **Never use `whoosh`** and no sound on cuts/transitions (the user does not want a sound when the picture switches). Volume 0.25–0.75. Music `public/musik.mp3` is mixed automatically (≈10 % under voice, ≈20 % in pauses, fades). New sounds: extend `tools/audio_synth.py`.
 
 **Pitfalls already solved — do not reintroduce:**
 - Never use `@react-three/postprocessing`'s `EffectComposer` (blank frames in Remotion). Post FX run through engine `PostFX`; shots only set `<Post …/>`.
@@ -86,6 +86,8 @@ Afterwards:
 ffmpeg -y -i out/<slug>.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:a 192k -ar 48000 -movflags +faststart out/<slug>_n.mp4 && mv out/<slug>_n.mp4 out/<slug>.mp4
 ```
 Verify duration > 60 s, voice clearly above music in pauses (`volumedetect` on a pause vs. speech window), first vs. last frame match.
+
+Audio-only changes later (SFX, music, levels): edit `Video.tsx` and run `python3 tools/mixaudio.py <slug>` — it rebuilds the same mix and swaps the audio track of `out/<slug>.mp4` in seconds, no picture re-render.
 
 ## 6. Deliver
 - Commit `scripts/<slug>/`, `src/videos/<slug>/`, `public/<slug>/`, `src/videos/index.ts`, `out/<slug>.mp4`; push to the session branch.
