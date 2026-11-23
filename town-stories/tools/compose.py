@@ -73,7 +73,8 @@ for g in groups:
             parts.append((r'{\c' + YEL + r'}' + u + r'{\c&H00FFFFFF&}') if wj == wi else u)
         pop = r'{\fscx112\fscy112\t(0,70,\fscx100\fscy100)}' if wi == 0 else ''
         ev.append(f'Dialogue: 1,{ts(a)},{ts(b)},Sub,,0,0,0,,' + pop + ' '.join(parts))
-ev.append(f'Dialogue: 0,{ts(0)},{ts(total)},Badge,,0,0,0,,{badge}')
+if badge:
+    ev.append(f'Dialogue: 0,{ts(0)},{ts(total)},Badge,,0,0,0,,{badge}')
 # option badges during option lines (16,17,18) and final list
 colors = ['&H0042B53F&', '&H00C94F8C&', '&H00D98A2F&']  # BGR: green, purple, blue
 for k in range(3):
