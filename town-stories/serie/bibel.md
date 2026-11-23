@@ -18,10 +18,14 @@ The letter says what will happen tomorrow, and it always comes true.
 - **Grandma Ruby**: purple dress, grey hair bun, round glasses. "Knows secrets."
 - **Mailbox**: red with a round lid and a little flag. Glows green at 3:00.
 
+- **Bunny slippers**: Pip wears white bunny slippers with ears (from episode 2 on). The glowing footprints have the same shape.
+- **The mysterious footprints**: glow blue (#5CF2FF), bunny shape. Probably "Pip from tomorrow".
+
 ## Town
 Small houses in pastel colours, cobblestone street, lanterns, forest at the edge of town, big moon.
 
 ## Episodes
 | # | Title | Options | Winner |
 |---|---|---|---|
-| 1 | The town disappears | 1 forest footprints / 2 wake Grandma / 3 write back | open |
+| 1 | The town disappears | 1 forest footprints / 2 wake Grandma / 3 write back | **1 forest footprints** |
+| 2 | The footprints in the forest | 1 turn around / 2 run home / 3 open the second letter | open |
