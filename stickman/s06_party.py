@@ -2,7 +2,42 @@
 import math
 
 import stick as S
-from lib import INK, PALETTE, PAPER, SCALE, bubble, caption, end_card, fade, rounded, text
+from lib import (INK, PALETTE, PAPER, SCALE, Particles, bubble, camera, end_card, fade, narrated_sound, rounded,
+                 text, word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.3, "Introverts at parties be like."),
+    (2.6, "Walks in. Music way too loud."),
+    (6.2, "Minute one: already wants to go home."),
+    (12.2, "Finds the only dog. Best friend now."),
+    (16.6, "Honestly? Best conversation of the night."),
+    (20.2, "Uh oh. Someone's walking over."),
+    (23.2, "So... what do you do?"),
+    (28.2, "Suddenly: a very important phone call."),
+    (36.2, "Leaves without saying bye to anyone."),
+    (43.2, "Home. Pajamas. Silence. Perfect."),
+    (52.2, "Texts the group: that was so much fun, let's do it again!"),
+    (56.6, "Tag an introvert."),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(6)
+BME, BGU = S.Blend(), S.Blend()
+NOW = [0.0]
+
+
+def draw_me(c, pose, x, y, face=1, expr="flat", **kw):
+    p = BME(pose, NOW[0])
+    if abs(y - me.ground_y(pose, FLOOR)) < 1:
+        y = me.ground_y(p, FLOOR)
+    me.draw(c, p, x, y, face, expr, t=NOW[0], shadow=FLOOR, **kw)
+
+
+def draw_guest(c, pose, x, y, face=1, expr="flat", **kw):
+    p = BGU(pose, NOW[0])
+    if abs(y - guest.ground_y(pose, FLOOR)) < 1:
+        y = guest.ground_y(p, FLOOR)
+    guest.draw(c, p, x, y, face, expr, t=NOW[0], shadow=FLOOR, talk=23 < NOW[0] < 26, **kw)
 
 W, H, DUR = 1080, 1920, 60
 FLOOR = 1480
@@ -116,6 +151,20 @@ def crowd(c, t, x0=560):
 
 
 def frame(c, t):
+    NOW[0] = t
+    z = 1 + 0.07 * S.ease((t - 23) / 0.4) * (1 - S.ease((t - 27.4) / 0.5)) if 23 < t < 28 else 1.0
+    camera(c, W, H, t, zoom=z, fx=W / 2, fy=FLOOR - 450)
+    scene(c, t)
+    c.restore()
+    text(c, "Introverts at parties", W / 2, 170, 72, INK)
+    text(c, "be like:", W / 2, 255, 72, (0.85, 0.3, 0.3))
+    if t > 56:
+        end_card(c, W, H, [("Tag an introvert", 92, (1, 0.82, 0.25)), ("who does this", 60, (1, 1, 1))],
+                 t - 56)
+    word_captions(c, CHUNKS, t, W / 2, 1700 if t < 56 else 1450, 74)
+
+
+def scene(c, t):
     home = 43 <= t
     room(c, t, party=not home)
     if not home:
@@ -146,16 +195,16 @@ def frame(c, t):
     if t < 6:
         x = 150 + min(1, t / 4) * 230
         pose = S.walk(t * 6) if t < 4 else S.STAND
-        me.draw(c, pose, x, me.ground_y(pose, FLOOR), 1, "flat")
+        draw_me(c, pose, x, me.ground_y(pose, FLOOR), 1, "flat")
     elif t < 12:
-        me.draw(c, S.STAND, 380, me.ground_y(S.STAND, FLOOR), 1, "sad")
+        draw_me(c, S.STAND, 380, me.ground_y(S.STAND, FLOOR), 1, "sad")
         bubble(c, 330, 640, "I miss my bed.", 46, 520, tail=(380, FLOOR - 430), think=True,
                alpha=fade(t, 6.5, 12))
     elif t < 20:
         dog(c, 470, t)
         pose = S.lerp_pose(S.STAND, S.CROUCH, S.ease((t - 12) / 0.8))
         pose = dict(pose, ua_r=70 + 15 * math.sin(t * 8), fa_r=90)
-        me.draw(c, pose, 260, me.ground_y(pose, FLOOR), 1, "happy")
+        draw_me(c, pose, 260, me.ground_y(pose, FLOOR), 1, "happy")
         for k in range(3):
             hx = 380 + k * 40 + 10 * math.sin(t * 3 + k)
             hy = FLOOR - 400 - ((t * 120 + k * 60) % 220)
@@ -169,8 +218,8 @@ def frame(c, t):
         dog(c, 470, t, happy=False)
         gx = 1100 - min(1, (t - 20) / 2.5) * 420
         gp = S.walk(t * 6) if t < 22.5 else S.STAND
-        guest.draw(c, gp, gx, guest.ground_y(gp, FLOOR), -1, "smile", color=BLUE)
-        me.draw(c, S.CROUCH if t < 22 else S.STAND, 260,
+        draw_guest(c, gp, gx, guest.ground_y(gp, FLOOR), -1, "smile", color=BLUE)
+        draw_me(c, S.CROUCH if t < 22 else S.STAND, 260,
                 me.ground_y(S.CROUCH if t < 22 else S.STAND, FLOOR), 1, "shock" if t > 23 else "flat")
         if t > 23:
             bubble(c, 700, 600, "So... what do you do?", 48, 520, tail=(gx - 10, FLOOR - 400),
@@ -181,10 +230,10 @@ def frame(c, t):
                 c.arc(330 + k * 12, yy, 8, 0, 2 * math.pi)
                 c.fill()
     elif t < 36:
-        guest.draw(c, S.SHRUG, 680, guest.ground_y(S.SHRUG, FLOOR), -1, "flat", color=BLUE)
+        draw_guest(c, S.SHRUG, 680, guest.ground_y(S.SHRUG, FLOOR), -1, "flat", color=BLUE)
         x = 260 - max(0, (t - 31)) * 25
         pose = S.PHONE if t < 31 else dict(S.walk(t * 5), ua_r=20, fa_r=120)
-        me.draw(c, pose, x, me.ground_y(pose, FLOOR), 1 if t < 31 else -1, "flat")
+        draw_me(c, pose, x, me.ground_y(pose, FLOOR), 1 if t < 31 else -1, "flat")
         j = me.joints(pose, x, me.ground_y(pose, FLOOR), 1 if t < 31 else -1)
         hx, hy = j["hand_r"]
         c.set_source_rgb(*INK)
@@ -195,25 +244,23 @@ def frame(c, t):
     elif t < 43:
         x = 140 - min(1, (t - 36) / 3) * 260
         pose = S.walk(t * 6)
-        me.draw(c, pose, x + 260, me.ground_y(pose, FLOOR), -1, "smile")
+        draw_me(c, pose, x + 260, me.ground_y(pose, FLOOR), -1, "smile")
         door(c, 1.0 if t < 40 else 0.0)
     else:
         pose = dict(S.LIE)
-        me.draw(c, pose, 560, FLOOR - 222, 1, "happy")
+        me.draw(c, pose, 560, FLOOR - 222, 1, "happy", t=t)
         if t >= 52:
             bubble(c, 560, 700, "That was SO fun! Let's do it again!", 46, 600, alpha=fade(t, 52.2, 56))
-    text(c, "Introverts at parties", W / 2, 170, 72, INK)
-    text(c, "be like:", W / 2, 255, 72, (0.85, 0.3, 0.3))
-    for a, b, s in BEATS:
-        al = fade(t, a + 0.1, b - 0.05)
-        if al:
-            caption(c, s, W / 2, 1640, 50, 980, alpha=al)
-    if t > 56:
-        end_card(c, W, H, [("Tag an introvert", 92, (1, 0.82, 0.25)), ("who does this", 60, (1, 1, 1))],
-                 t - 56)
-
+    if 43 > t and int(t * 30) % 6 == 0:
+        FX.emit(FX.r.uniform(80, W - 80), 760, 1, list(PALETTE), speed=(20, 60), up=0, life=(1.5, 2.5),
+                size=(5, 8), gravity=120, kind="confetti")
+    FX.step_draw(c, t)
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     # loud party music until he leaves, then quiet keys at home
     a.music(0, 40, bpm=124, chords=((0, 4, 7), (9, 12, 16), (5, 9, 12), (7, 11, 14)), root=220.0, vol=0.75)
     a.music(43, 60, bpm=70, chords=((0, 4, 7), (5, 9, 12)), root=261.6, vol=0.35, drums=False)

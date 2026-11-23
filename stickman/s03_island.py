@@ -5,7 +5,27 @@ import random
 import cairo
 
 import stick as S
-from lib import SCALE, caption, end_card, fade, rounded, text
+from lib import (SCALE, Particles, camera, caption, end_card, fade, narrated_sound, pulse, rounded, text, vignette,
+                 word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.4, "Day one. He wakes up on an island. Completely alone."),
+    (6.2, "Day three. He finds fresh water."),
+    (11.2, "Day seven. He builds his first shelter."),
+    (17.2, "Day twelve. Fire. Finally warm."),
+    (22.7, "Day thirty. A storm destroys everything."),
+    (28.2, "Day thirty one. He rebuilds. Stronger."),
+    (33.2, "Day sixty. He builds a raft to escape..."),
+    (37.3, "...and it sinks."),
+    (40.2, "Day eighty five. He writes S. O. S. on the beach."),
+    (47.2, "Day one hundred. A ship!"),
+    (55.3, "Rescued. Would you last a hundred days?"),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(11)
+BL = S.Blend()
+STRIKES = [23.0, 24.4, 26.0]
 
 W, H, DUR = 1080, 1920, 60
 WHITE = (0.93, 0.93, 0.95)
@@ -147,11 +167,32 @@ def fire(c, x, t, size=1.0):
 
 def frame(c, t):
     i, lt, day, cap = beat(t)
+    shake = sum(pulse(t, s_, 0.5, 18) for s_ in STRIKES) + (3 if i == 4 else 0)
+    z = 1.0
+    if i == 8:
+        z = 1 + 0.08 * S.ease(lt / 3)
+    camera(c, W, H, t, zoom=z, fx=W / 2 + 35 * (z - 1) / 0.08, fy=H / 2 + 60 * (z - 1) / 0.08, shake=shake)
+    scene(c, t)
+    c.restore()
+    vignette(c, W, H, 0.5)
+    hud(c, t)
+
+
+def scene(c, t):
+    i, lt, day, cap = beat(t)
     storm = i == 4
     sky(c, storm)
-    if storm and (int(lt * 3) % 4 == 1) and lt % 0.33 < 0.08:
-        c.set_source_rgba(1, 1, 1, 0.7)
-        c.paint()
+    for s_ in STRIKES:
+        if 0 <= t - s_ < 0.18:
+            c.set_source_rgba(1, 1, 1, 0.75 * (1 - (t - s_) / 0.18))
+            c.paint()
+            c.set_source_rgba(1, 1, 0.9, 0.9)
+            c.set_line_width(6)
+            c.move_to(700, 0)
+            c.line_to(640, 300)
+            c.line_to(720, 330)
+            c.line_to(610, 700)
+            c.stroke()
     sea(c, t, storm or i == 6)
     island(c)
     # shelter state
@@ -211,9 +252,12 @@ def frame(c, t):
         c.fill()
         pose = S.SIT if sink == 0 else S.ARMS_UP
         expr = "smile" if sink == 0 else "shock"
-        st.draw(c, pose, rx, st.ground_y(pose, ry - 10) + sink * 60, 1, expr)
+        st.draw(c, pose, rx, st.ground_y(pose, ry - 10) + sink * 60, 1, expr, t=t)
+        if abs(lt - 4.25) < 0.5 / 30:
+            FX.emit(rx, ry, 50, (0.6, 0.75, 0.9), speed=(150, 420), up=380, life=(0.6, 1.1), size=(4, 8),
+                    gravity=900, spread=2.2, angle=-math.pi / 2)
         if sink > 0:
-            caption(c, "...it sank.", W / 2, 520, 56, 900, alpha=min(1, sink * 2))
+            pass
         pose = None
     elif i == 7:
         c.set_source_rgb(0.85, 0.8, 0.65)
@@ -252,21 +296,43 @@ def frame(c, t):
         pose = S.ARMS_UP if (lt * 3) % 2 < 1 else S.lerp_pose(S.ARMS_UP, S.STAND, 0.5)
         expr, x = "happy", 300
     if pose is not None:
-        st.draw(c, pose, x, st.ground_y(pose, GROUND) if pose is not S.LIE else GROUND - 15, 1, expr)
-    # HUD
+        if pose is S.LIE:
+            st.draw(c, pose, x, GROUND - 15, 1, expr, t=t)
+        else:
+            pose = BL(pose, t)
+            st.draw(c, pose, x, st.ground_y(pose, GROUND), 1, expr, t=t, shadow=GROUND)
+    # particles: fire sparks, rain splashes, sand when he gets up
+    if (i == 3 or i >= 7) and int(t * 30) % 2 == 0:
+        FX.emit(450 + FX.r.uniform(-20, 20), GROUND - 60, 1, [(1, 0.7, 0.2), (1, 0.45, 0.1)], speed=(20, 60),
+                up=160, life=(0.6, 1.3), size=(2, 4), gravity=-40)
+    if i == 4:
+        for _ in range(3):
+            FX.emit(FX.r.uniform(0, W), FX.r.uniform(GROUND - 20, H - 200), 2, (0.7, 0.75, 0.85), speed=(30, 90),
+                    up=100, life=(0.15, 0.3), size=(2, 3), gravity=900)
+    if i == 8 and int(t * 30) % 4 == 0:
+        FX.emit(x, GROUND - 300, 3, [(1, 0.85, 0.3), (1, 1, 1)], speed=(100, 300), up=200, life=(0.6, 1.0),
+                size=(5, 9), gravity=400, kind="confetti")
+    FX.step_draw(c, t)
+
+
+def hud(c, t):
+    i, lt, day, cap = beat(t)
     rounded(c, W / 2 - 190, 140, 380, 120, 30)
     c.set_source_rgba(0, 0, 0, 0.55)
     c.fill()
     text(c, f"DAY {day}", W / 2, 228, 80, (1, 0.82, 0.25))
     text(c, "Surviving 100 days alone", W / 2, 330, 46, (0.85, 0.85, 0.9))
-    al = fade(t, BEATS[i][0] + 0.2, BEATS[i][1] - 0.1)
-    caption(c, cap, W / 2, 1720, 50, 960, alpha=al)
     if t > 55:
         end_card(c, W, H, [("RESCUED", 120, (1, 0.82, 0.25)), ("after 100 days", 60, (1, 1, 1)),
                            ("Would YOU last 100 days?", 44, (0.8, 0.8, 0.8))], t - 55)
+    word_captions(c, CHUNKS, t, W / 2, 1720 if t < 55 else 1500, 72)
 
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     a.music(0, 60, bpm=72, chords=((0, 3, 7), (8, 12, 15), (5, 8, 12), (7, 11, 14)), root=146.8, vol=0.5,
             drums=False)
     a.pad(0, 60, [73.4, 110.0], 0.03)

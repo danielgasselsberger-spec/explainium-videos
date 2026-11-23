@@ -2,7 +2,25 @@
 import math
 
 import stick as S
-from lib import INK, SCALE, bubble, caption, ease, end_card, fade, paper, rounded, text
+from lib import (INK, PALETTE, SCALE, Particles, bubble, camera, ease, end_card, fade, narrated_sound, paper, pulse,
+                 rounded, text, word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.3, "Two guys. Same mountain. Same year."),
+    (3.0, "The doer just starts walking. No plan, no perfect shoes."),
+    (7.6, "The overthinker asks: what if I fall?"),
+    (12.0, "And the doer does fall. Gets up. Keeps going."),
+    (17.0, "Meanwhile: tutorials, plans, and version seven of the plan."),
+    (25.0, "Day after day, the doer takes one small step."),
+    (32.5, "The weather isn't perfect, says the overthinker. Maybe next month."),
+    (40.5, "Day three hundred and fifty."),
+    (46.6, "The doer is standing on the top."),
+    (51.3, "Don't wait for the perfect moment. Which one are you?"),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(3)
+B_DOER, B_OVER = S.Blend(), S.Blend()
 
 W, H, DUR = 1080, 1920, 60
 PANEL_H = 760
@@ -61,6 +79,19 @@ def doer_progress(t):
 
 def frame(c, t):
     paper(c, W, H)
+    top_x, top_y = slope_point(TOPS[0], 1.0)
+    z = 1 + 0.12 * S.ease((t - 47) / 1.2) if 47 < t < 52 else 1.0
+    camera(c, W, H, t, zoom=z, fx=W / 2 + (top_x - W / 2) * (z - 1) / 0.12 * 0.5,
+           fy=H / 2 + (top_y - H / 2) * (z - 1) / 0.12 * 0.6, shake=pulse(t, 13.4, 0.5, 16))
+    scene(c, t)
+    c.restore()
+    if t > 51:
+        end_card(c, W, H, [("Don't wait for", 90, (1, 1, 1)), ("the perfect moment.", 90, (1, 0.82, 0.25)),
+                           ("Which one are you?", 46, (0.8, 0.8, 0.8))], t - 51)
+    word_captions(c, CHUNKS, t, W / 2, 1105 if t < 51 else 1500, 72)
+
+
+def scene(c, t):
     text(c, "OVERTHINKER vs DOER", W / 2, 150, 76, INK)
     text(c, "Same mountain. Same year.", W / 2, 230, 48, (0.45, 0.45, 0.5), bold=False)
     day = 1 + int(364 * min(1, t / 50))
@@ -86,6 +117,8 @@ def frame(c, t):
         pose = S.walk(t * 7)
         pose["lean"] += 14
         expr = "flat"
+        if int(t * 30) % 13 == 0:
+            FX.emit(x, gy, 3, (0.6, 0.55, 0.45), speed=(30, 90), up=60, life=(0.3, 0.6), size=(3, 6), gravity=300)
     elif mode == "fall":
         pose = S.LIE
         expr = "shock"
@@ -97,10 +130,16 @@ def frame(c, t):
         expr = "happy"
     else:
         pose, expr = S.STAND, "smile"
+    if abs(t - 13.4) < 0.5 / 30:
+        FX.emit(x, gy, 26, (0.55, 0.5, 0.42), speed=(80, 260), up=150, life=(0.4, 0.9), size=(4, 9), gravity=500)
+    if abs(t - 47.3) < 0.5 / 30:
+        FX.emit(x, gy - 150, 90, list(PALETTE), speed=(200, 650), up=300, life=(1.2, 2.2), size=(6, 11),
+                gravity=500, kind="confetti")
     if mode == "fall":
         st.draw(c, S.LIE, x, gy - 18, 1, "shock")
     else:
-        st.draw(c, pose, x, st.ground_y(pose, gy), 1, expr)
+        p = B_DOER(pose, t)
+        st.draw(c, p, x, st.ground_y(p, gy), 1, expr, t=t, shadow=gy)
     if t > 47:
         fx, fy = slope_point(y0, 1.0)
         c.set_source_rgb(*INK)
@@ -139,7 +178,11 @@ def frame(c, t):
         al = fade(t, a, b)
         if al:
             bubble(c, 560, y0 + 140, s, 40, 520, tail=(x + 30, gy - 230), think=a < 48, alpha=al)
-    st.draw(c, pose, x, st.ground_y(pose, gy), 1, expr)
+    p = B_OVER(pose, t)
+    st.draw(c, p, x, st.ground_y(p, gy), 1, expr, t=t, shadow=gy)
+    if 33 <= t < 41 and int(t * 30) % 3 == 0:
+        FX.emit(x + FX.r.uniform(-60, 70), gy - 5, 2, (0.35, 0.55, 0.95), speed=(40, 120), up=120,
+                life=(0.2, 0.4), size=(2, 4), gravity=900)
     if pose is S.PHONE:
         j = st.joints(pose, x, st.ground_y(pose, gy), 1)
         hx, hy = j["hand_r"]
@@ -160,12 +203,14 @@ def frame(c, t):
             c.move_to(xx, yy)
             c.line_to(xx - 6, yy + 18)
         c.stroke()
-    if t > 51:
-        end_card(c, W, H, [("Don't wait for", 90, (1, 1, 1)), ("the perfect moment.", 90, (1, 0.82, 0.25)),
-                           ("Which one are you?", 46, (0.8, 0.8, 0.8))], t - 51)
+    FX.step_draw(c, t)
 
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     a.music(0, 60, bpm=96, chords=((0, 4, 7), (7, 11, 14), (9, 12, 16), (5, 9, 12)), root=220.0, vol=0.55)
     a.add(12.0, "whoosh", 400, 0.4)
     a.add(13.4, "thud", 70, 0.6)

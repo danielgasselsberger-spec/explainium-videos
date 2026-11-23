@@ -4,7 +4,29 @@ import math
 import cairo
 
 import stick as S
-from lib import INK, PAPER, SCALE, bubble, caption, end_card, fade, rounded, text
+from lib import (INK, PAPER, SCALE, Particles, bubble, camera, end_card, fade, narrated_sound, pulse, rounded,
+                 text, word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.3, "Me at night: tomorrow I'll wake up at six, and go for a run."),
+    (5.2, "Six A.M. The alarm rings."),
+    (7.6, "Just five more minutes."),
+    (11.0, "Snooze. Again."),
+    (14.8, "And again."),
+    (17.8, "Six thirty six. Still five more minutes."),
+    (24.2, "Wait. What time is it?!"),
+    (27.0, "Seven fifty eight!"),
+    (30.3, "No shower. No breakfast. Just run."),
+    (37.0, "Faster. Faster!"),
+    (44.3, "Made it! Right?"),
+    (47.0, "Closed?"),
+    (50.3, "It was Saturday."),
+    (56.2, "Be honest. How many snoozes?"),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(7)
+BL = S.Blend()
 
 W, H, DUR = 1080, 1920, 60
 FLOOR = 1480
@@ -135,6 +157,25 @@ def office(c, t):
 
 
 def frame(c, t):
+    ring = t < 24 and any(r <= t < r + 1.2 for r in RINGS)
+    shake = (5 if ring else 0) + pulse(t, 24.0, 0.6, 22) + pulse(t, 46.2, 0.5, 10)
+    camera(c, W, H, t, shake=shake)
+    scene(c, t)
+    c.restore()
+    text(c, "\"I'll wake up at 6", W / 2, 170, 70, INK)
+    text(c, "tomorrow.\"", W / 2, 255, 70, RED)
+    if t > 56:
+        end_card(c, W, H, [("Be honest:", 70, (1, 1, 1)), ("how many snoozes?", 90, (1, 0.82, 0.25))], t - 56)
+    word_captions(c, CHUNKS, t, W / 2, 1720 if t < 56 else 1450, 74)
+
+
+def zzz(c, t, x, y):
+    for k in range(3):
+        u = ((t * 0.5 + k / 3) % 1)
+        text(c, "Z", x + 40 * u + k * 10, y - 160 * u, 40 + 30 * u, INK, alpha=1 - u)
+
+
+def scene(c, t):
     if t < 30:
         bedroom(c, t)
         if t < 24:
@@ -143,7 +184,9 @@ def frame(c, t):
             pose = dict(S.LIE)
             if slap:
                 pose.update(ua_r=-60, fa_r=-20)
-            me.draw(c, pose, 520, FLOOR - 236, 1, "sleep" if not ring else "flat")
+            me.draw(c, pose, 520, FLOOR - 236, 1, "sleep" if not ring else "flat", t=t)
+            if not ring:
+                zzz(c, t, 420, FLOOR - 330)
             if t < 5:
                 bubble(c, 540, 600, "Tomorrow I wake up at 6 and go for a run!", 46, 760,
                        tail=(330, FLOOR - 330), think=True, alpha=fade(t, 0.3, 4.9))
@@ -164,7 +207,7 @@ def frame(c, t):
     elif t < 44:
         street(c, t)
         pose = S.walk(t * 14, run=True)
-        me.draw(c, pose, 420, me.ground_y(pose, FLOOR), 1, "scream")
+        me.draw(c, pose, 420, me.ground_y(pose, FLOOR), 1, "scream", t=t, shadow=FLOOR)
         c.set_source_rgba(*INK, 0.5)
         c.set_line_width(5)
         for k in range(5):
@@ -179,25 +222,23 @@ def frame(c, t):
         if t < 46:
             pose = S.walk(t * 14, run=True)
             x = 100 + (t - 44) / 2 * 330
-            me.draw(c, pose, x, me.ground_y(pose, FLOOR), 1, "scream")
+            me.draw(c, pose, x, me.ground_y(pose, FLOOR), 1, "scream", t=t, shadow=FLOOR)
         elif t < 50:
-            me.draw(c, S.STAND, 430, me.ground_y(S.STAND, FLOOR), 1, "shock")
+            p = BL(S.STAND, t)
+            me.draw(c, p, 430, me.ground_y(p, FLOOR), 1, "shock", t=t, shadow=FLOOR)
         else:
-            me.draw(c, S.FACEPALM, 430, me.ground_y(S.FACEPALM, FLOOR), 1, "sad")
-    text(c, "\"I'll wake up at 6", W / 2, 170, 70, INK)
-    text(c, "tomorrow.\"", W / 2, 255, 70, RED)
-    beats = [(0.3, 4.9, "Me at night, full of plans:"), (5.2, 9.6, "6:00. The alarm rings."), (9.8, 23.8, "Just 5 more minutes. Again. And again."),
-             (24.2, 29.8, "Wait. WHAT time is it?!"), (30.2, 43.8, "No shower. No breakfast. RUN."),
-             (44.2, 49.8, "Made it! ...right?"), (50.2, 55.8, "It was Saturday.")]
-    for a, b, s in beats:
-        al = fade(t, a, b)
-        if al:
-            caption(c, s, W / 2, 1680, 52, 980, alpha=al)
-    if t > 56:
-        end_card(c, W, H, [("Be honest:", 70, (1, 1, 1)), ("how many snoozes?", 90, (1, 0.82, 0.25))], t - 56)
-
+            p = BL(S.FACEPALM, t)
+            me.draw(c, p, 430, me.ground_y(p, FLOOR), 1, "sad", t=t, shadow=FLOOR)
+    if 30 <= t < 46 and int(t * 30) % 3 == 0:
+        FX.emit(380, FLOOR - 5, 3, (0.5, 0.5, 0.55), speed=(40, 140), up=60, life=(0.3, 0.6), size=(5, 10),
+                gravity=200, angle=math.pi, spread=1.0)
+    FX.step_draw(c, t)
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     a.music(0, 24, bpm=70, chords=((0, 4, 7), (5, 9, 12)), root=261.6, vol=0.3, drums=False)
     for r in RINGS:
         for k in range(6):

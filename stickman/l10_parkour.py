@@ -5,7 +5,8 @@ import sys
 import cairo
 
 import stick as S
-from lib import FPS, SCALE, Video, caption, end_card, fade, rounded, text
+from lib import FPS, SCALE, Particles, Video, camera, caption, end_card, fade, pulse, rounded, text, word_captions
+from tts import Narration
 
 W, H, DUR = 1920, 1080, 60
 GY = 820
@@ -83,6 +84,28 @@ def build():
 
 SEGS, T_END = build()
 FAIL_TIMES = [s[0] for s in SEGS if s[3] == "fall"]
+LEVEL_START = {}
+for _sg in SEGS:
+    LEVEL_START.setdefault(_sg[2], _sg[0])
+FINAL_JUMP = [sg[0] for sg in SEGS if sg[9] == "final"][0]
+ATTEMPTS = SEGS[-1][8]
+NARR = Narration([
+    (0.2, "Can he beat all ten levels?"),
+    (LEVEL_START[1] + 0.1, "Level two. Easy... right?"),
+    (FAIL_TIMES[0] + 0.1, "Nope."),
+    (LEVEL_START[3] + 0.1, "Level four. The gaps are getting bigger."),
+    (LEVEL_START[5] + 0.1, "Every fail counts as an attempt."),
+    (LEVEL_START[7] + 0.1, "Why are the platforms so tiny?!"),
+    (LEVEL_START[8] + 0.1, "Level nine. Come on..."),
+    (LEVEL_START[9] + 0.1, "Level ten. One giant jump."),
+    (FINAL_JUMP + 0.1, "Slow motion..."),
+    (T_END + 0.1, "All ten levels!"),
+    (T_END + 1.6, f"{ATTEMPTS} attempts. How many would you need?"),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(10)
+LANDS = [sg[1] for sg in SEGS if sg[3] == "jump"]
+FALL_ENDS = [sg[1] - 0.25 for sg in SEGS if sg[3] == "fall"]
 
 
 def seg_at(t):
@@ -137,9 +160,13 @@ _cam = [0.0, -1.0]
 
 
 def frame(c, t):
+    shake = sum(pulse(t, tl, 0.3, 6) for tl in LANDS) + sum(pulse(t, tf, 0.45, 16) for tf in FALL_ENDS)
     if not PORTRAIT:
+        camera(c, W, H, t, shake=shake)
         world(c, t)
+        c.restore()
         hud(c, t, W)
+        word_captions(c, CHUNKS, t, W / 2, 1010 if t < T_END + 0.2 else 860, 64, maxw=1500)
         return
     target = min(1920 - PW, max(0.0, stick_x(t) - 380))
     kind = seg_at(t)[3]
@@ -149,13 +176,14 @@ def frame(c, t):
         _cam[0] += (target - _cam[0]) * 0.25
     _cam[1] = t
     c.save()
-    c.translate(-_cam[0], P_DY)
+    c.translate(-_cam[0] + shake * math.sin(t * 91), P_DY + shake * math.cos(t * 83))
     world(c, t)
     c.restore()
     c.set_source_rgb(0.05, 0.02, 0.1)
     c.rectangle(0, H + P_DY, PW, PH)
     c.fill()
     hud(c, t, PW)
+    word_captions(c, CHUNKS, t, PW / 2, 1780 if t < T_END + 0.2 else 1450, 74)
 
 
 def world(c, t):
@@ -195,11 +223,37 @@ def world(c, t):
     else:
         x, y = 1920 + 80, GY
         pose, expr = S.STAND, "happy"
+    for tl in LANDS:
+        if abs(t - tl) < 0.5 / FPS:
+            FX.emit(x, GY, 24, [CYAN, (1, 1, 1)], speed=(120, 420), up=180, life=(0.3, 0.7), size=(3, 7),
+                    gravity=700, angle=-math.pi / 2, spread=2.6)
+    for tf in FALL_ENDS:
+        if abs(t - tf) < 0.5 / FPS:
+            FX.emit(x, H - 30, 40, [PINK, (1, 1, 1)], speed=(150, 520), up=300, life=(0.4, 0.9), size=(4, 8),
+                    gravity=800, angle=-math.pi / 2, spread=2.2)
+    if kind == "run" and int(t * 30) % 4 == 0:
+        FX.emit(x - 30, GY - 4, 1, CYAN, speed=(20, 60), up=30, life=(0.2, 0.4), size=(3, 5), gravity=0,
+                angle=math.pi, spread=0.6)
+    if kind in ("jump", "jumpfail", "fall"):
+        for k in range(1, 5):
+            tt = t - k * 0.035
+            sg = seg_at(tt)
+            if sg[3] not in ("jump", "jumpfail", "fall") or sg is not s:
+                continue
+            uu = max(0.0, (tt - t0) / max(1e-6, t1 - t0))
+            gx = x0 + (x1 - x0) * uu
+            if kind == "fall":
+                gy_ = y0 + (y1 - y0) * uu * uu
+            else:
+                pk = 210 if extra == "final" else 150
+                gy_ = y0 + (y1 - y0) * uu - pk * 4 * uu * (1 - uu)
+            st.draw(c, pose, gx, st.ground_y(pose, gy_), 1, None, alpha=0.18 / k * 2)
+    FX.step_draw(c, t)
     if kind == "respawn":
         a = 0.3 + 0.7 * abs(math.sin(u * math.pi * 3))
-        st.draw(c, pose, x, st.ground_y(pose, y), 1, expr, alpha=a)
+        st.draw(c, pose, x, st.ground_y(pose, y), 1, expr, alpha=a, t=t)
     else:
-        st.draw(c, pose, x, st.ground_y(pose, y), 1, expr)
+        st.draw(c, pose, x, st.ground_y(pose, y), 1, expr, t=t)
 
 
 def hud(c, t, FW):
@@ -252,6 +306,12 @@ def hud(c, t, FW):
 
 
 def sound(a):
+    _music(a)
+    a.buf *= 0.55
+    NARR.mix(a)
+
+
+def _music(a):
     a.music(0, 60, bpm=128, chords=((0, 3, 7), (8, 12, 15), (5, 8, 12), (7, 11, 14)), root=220.0, vol=0.55)
     for sgm in SEGS:
         t0, t1, li, kind = sgm[:4]

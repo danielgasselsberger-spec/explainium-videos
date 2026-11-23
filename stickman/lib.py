@@ -426,3 +426,136 @@ def run(mod, out, preview=None):
         mod.frame(c, t)
         v.emit(f)
     v.finish()
+
+
+# ---------------------------------------------------------------- richer animation helpers
+
+def outlined(c, s, x, y, size, fill=(1, 1, 1), stroke=(0, 0, 0), sw=None, align="center", alpha=1.0, scale=1.0):
+    c.save()
+    c.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    c.set_font_size(size)
+    ext = c.text_extents(s)
+    w = ext.x_advance
+    ox = {"center": -w / 2, "left": 0, "right": -w}[align]
+    c.translate(x, y)
+    c.scale(scale, scale)
+    c.move_to(ox, 0)
+    c.text_path(s)
+    c.set_line_join(cairo.LINE_JOIN_ROUND)
+    c.set_line_width(sw if sw is not None else size * 0.16)
+    c.set_source_rgba(*stroke, alpha)
+    c.stroke_preserve()
+    c.set_source_rgba(*fill, alpha)
+    c.fill()
+    c.restore()
+    return w
+
+
+def word_captions(c, chunks, t, cx, y, size=76, maxw=980):
+    """TikTok-style captions synced to narration: current chunk, active word in yellow, pop-in."""
+    for t0, t1, words in chunks:
+        if t0 <= t < t1:
+            pop = 0.82 + 0.18 * min(1.0, (t - t0) / 0.12)
+            c.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+            c.set_font_size(size)
+            labels = [w.upper() for w, _, _ in words]
+            gap = size * 0.32
+            widths = [c.text_extents(l).x_advance + gap for l in labels]
+            total = sum(widths)
+            sc = min(1.0, maxw / max(1, total)) * pop
+            x = cx - total * sc / 2
+            for (w, w0, w1), lab, wd in zip(words, labels, widths):
+                active = w0 <= t < max(w1, w0 + 0.12)
+                col = (1, 0.85, 0.2) if active else (1, 1, 1)
+                outlined(c, lab, x, y, size, fill=col, align="left", scale=sc, sw=size * 0.13)
+                x += wd * sc
+            c.new_path()
+            return
+
+
+class Particles:
+    """Simple stateful particle system (frames are rendered in order)."""
+
+    def __init__(self, seed=1):
+        import random as _r
+        self.r = _r.Random(seed)
+        self.p = []
+        self.last_t = None
+
+    def emit(self, x, y, n, col, speed=(100, 400), up=0.0, life=(0.5, 1.0), size=(4, 9), gravity=900, kind="dot",
+             spread=math.pi * 2, angle=0.0):
+        for _ in range(n):
+            a = angle + self.r.uniform(-spread / 2, spread / 2)
+            sp = self.r.uniform(*speed)
+            lf = self.r.uniform(*life)
+            c_ = col if not isinstance(col, list) else self.r.choice(col)
+            self.p.append([x, y, math.cos(a) * sp, math.sin(a) * sp - up, lf, lf, self.r.uniform(*size), c_, gravity,
+                           kind, self.r.uniform(0, 6.28)])
+
+    def step_draw(self, c, t):
+        dt = 1 / FPS if self.last_t is None else max(0.0, t - self.last_t)
+        self.last_t = t
+        alive = []
+        for q in self.p:
+            q[2] *= 0.985
+            q[3] += q[8] * dt
+            q[0] += q[2] * dt
+            q[1] += q[3] * dt
+            q[4] -= dt
+            if q[4] <= 0:
+                continue
+            a = max(0.0, q[4] / q[5])
+            c.set_source_rgba(*q[7], a)
+            if q[9] == "confetti":
+                c.save()
+                c.translate(q[0], q[1])
+                c.rotate(q[10] + t * 8)
+                c.rectangle(-q[6], -q[6] * 0.45, q[6] * 2, q[6] * 0.9)
+                c.restore()
+                c.fill()
+            elif q[9] == "line":
+                c.set_line_width(q[6] * 0.5)
+                c.move_to(q[0], q[1])
+                c.line_to(q[0] - q[2] * 0.04, q[1] - q[3] * 0.04)
+                c.stroke()
+            else:
+                c.arc(q[0], q[1], q[6] * (0.5 + 0.5 * a), 0, 2 * math.pi)
+                c.fill()
+            alive.append(q)
+        self.p = alive
+
+
+def camera(c, W, H, t, zoom=1.0, fx=None, fy=None, shake=0.0):
+    """Push a camera transform (call c.restore() after drawing the scene)."""
+    fx = W / 2 if fx is None else fx
+    fy = H / 2 if fy is None else fy
+    zoom = zoom + abs(shake) * 2.6 / min(W, H)
+    c.save()
+    sx = shake * math.sin(t * 91.0) + shake * 0.5 * math.sin(t * 57.0)
+    sy = shake * math.cos(t * 83.0)
+    c.translate(W / 2 + sx, H / 2 + sy)
+    c.scale(zoom, zoom)
+    c.translate(-fx, -fy)
+
+
+def pulse(t, t0, dur=0.6, amp=1.0):
+    """0 before t0, a quick bump to amp that decays over dur."""
+    if t < t0 or t > t0 + dur:
+        return 0.0
+    u = (t - t0) / dur
+    return amp * math.sin(u * math.pi) * (1 - u) * 1.6
+
+
+def vignette(c, W, H, strength=0.45):
+    g = cairo.RadialGradient(W / 2, H / 2, min(W, H) * 0.35, W / 2, H / 2, max(W, H) * 0.75)
+    g.add_color_stop_rgba(0, 0, 0, 0, 0)
+    g.add_color_stop_rgba(1, 0, 0, 0, strength)
+    c.set_source(g)
+    c.paint()
+
+
+def narrated_sound(audio, narration, music_fn):
+    """Music quieter under the voice."""
+    music_fn(audio)
+    audio.buf *= 0.55
+    narration.mix(audio)

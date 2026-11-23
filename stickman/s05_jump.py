@@ -4,12 +4,30 @@ import math
 import cairo
 
 import stick as S
-from lib import SCALE, caption, end_card, fade, fmt, rounded, text
+from lib import (SCALE, Particles, camera, end_card, fmt, narrated_sound, pulse, rounded, text, word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.3, "Every time he jumps, he jumps twice as high."),
+    (4.0, "One meter. Two. Four. Eight."),
+    (12.8, "Over the house. Over the trees."),
+    (20.5, "Jump eight: higher than the Statue of Liberty."),
+    (25.9, "Jump ten: above the Eiffel Tower."),
+    (29.6, "Jump eleven: over the tallest building on Earth."),
+    (34.0, "And now it gets crazy."),
+    (38.3, "Jump fifteen: sixteen kilometers. Above Mount Everest, and the planes."),
+    (45.6, "Jump eighteen: he's in space."),
+    (50.6, "Jump twenty: five hundred twenty four kilometers. Higher than the space station."),
+    (56.0, "Twenty jumps. Each one only doubled."),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(8)
 
 W, H, DUR = 1080, 1920, 60
 GY = 1640  # ground line on screen
 TOP = 330
 T0, JD, NJ = 3.0, 2.5, 20
+LANDINGS = [T0 + (n - 1) * JD + JD * 0.88 for n in range(1, NJ + 1)]
 st = S.Stick(130, (0.08, 0.08, 0.1))
 YEL = (1, 0.82, 0.25)
 
@@ -170,6 +188,14 @@ def landmark(c, name, hm, xm, kind, ppm, sx):
 
 
 def frame(c, t):
+    shake = sum(pulse(t, tl, 0.35, 4 + k * 0.8) for k, tl in enumerate(LANDINGS))
+    camera(c, W, H, t, shake=shake)
+    scene(c, t)
+    c.restore()
+    hud(c, t)
+
+
+def scene(c, t):
     n, alt, ph, V = state(t)
     ppm = (GY - TOP) / V
     sky(c, V)
@@ -193,12 +219,32 @@ def frame(c, t):
     expr = "smile" if n < 10 else ("shock" if n < 17 else "scream")
     if ph == "air" and y_feet < TOP + 40:
         y_feet = TOP + 40
-    stk.draw(c, pose, sx, stk.ground_y(pose, y_feet), 1, expr)
+    if ph == "air":
+        up = (t - T0 - (n - 1) * JD) / JD < 0.5
+        c.set_source_rgba(1, 1, 1, 0.55) if V > 3000 else c.set_source_rgba(0.1, 0.1, 0.15, 0.4)
+        c.set_line_width(4)
+        for k in range(5):
+            lx = sx - 60 + k * 30
+            ly = y_feet + (40 if up else -size * 1.3) + (k % 2) * 25
+            c.move_to(lx, ly)
+            c.line_to(lx, ly + (90 if up else -90))
+        c.stroke()
+    for tl in LANDINGS:
+        if abs(t - tl) < 0.5 / 30:
+            FX.emit(sx, GY, 26, [(0.55, 0.45, 0.35), (0.4, 0.6, 0.35)], speed=(100, 380), up=120, life=(0.4, 0.8),
+                    size=(5, 10), gravity=600, spread=2.6, angle=-math.pi / 2)
+    stk.draw(c, pose, sx, stk.ground_y(pose, y_feet), 1, expr, t=t, shadow=GY if alt * ppm < 400 else None)
     if size > true_px / 1.14 * 1.5 and ph == "air" and n > 8:
         c.set_source_rgba(1, 1, 1, 0.8)
         c.set_line_width(3)
+        c.new_path()
         c.arc(sx, y_feet - size * 0.55, size * 0.9, 0, 2 * math.pi)
         c.stroke()
+    FX.step_draw(c, t)
+
+
+def hud(c, t):
+    n, alt, ph, V = state(t)
     # HUD
     rounded(c, 60, 120, W - 120, 200, 30)
     c.set_source_rgba(0, 0, 0, 0.45)
@@ -207,17 +253,17 @@ def frame(c, t):
     hn = height(n) if n else 0
     text(c, f"Jump {n}:  {fmt(int(hn)) + ' m' if hn < 1000 else f'{hn / 1000:,.1f} km'}" if n else "Jump 0", W / 2, 285,
          64, YEL)
-    if n in PASS:
-        start = T0 + (n - 1) * JD + 0.6
-        al = fade(t, start, start + 1.9)
-        if al:
-            caption(c, PASS[n], W / 2, 1800, 52, 980, alpha=al)
     if t > 54:
         end_card(c, W, H, [("524 km", 130, YEL), ("in just 20 jumps", 60, (1, 1, 1)),
                            ("Each one only doubled.", 44, (0.8, 0.8, 0.8))], t - 54)
+    word_captions(c, CHUNKS, t, W / 2, 1810 if t < 54 else 1450, 70)
 
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     a.music(0, 60, bpm=120, chords=((0, 4, 7), (5, 9, 12), (7, 11, 14), (0, 4, 7)), root=220.0, vol=0.5)
     for n in range(1, NJ + 1):
         ts = T0 + (n - 1) * JD

@@ -6,7 +6,25 @@ import sys
 import cairo
 
 import stick as S
-from lib import FPS, NAMES, PALETTE, SCALE, caption, end_card, fade, rounded, text
+from lib import FPS, NAMES, PALETTE, SCALE, Particles, caption, end_card, fade, rounded, text, word_captions
+from tts import Narration
+
+
+def make_narration(win, second, margin):
+    hund = round(margin * 100)
+    by = f"by {hund} hundredths of a second" if hund < 100 else f"by {margin:.1f} seconds"
+    return Narration([
+        (0.2, "Eight stickmen. One obstacle course. Pick your color, now!"),
+        (4.4, "Hurdles first. Don't trip!"),
+        (9.6, "Then the mud pit. Slow motion, but not the cool kind."),
+        (16.0, "And a wall to climb."),
+        (22.0, "The lead keeps changing..."),
+        (30.0, "Halfway there. Who did you pick?"),
+        (38.0, "Final stretch!"),
+        (44.5, "It's going to be close..."),
+        (48.6, "Photo finish!"),
+        (52.0, f"{NAMES[win]} wins, {by}! Did your color win?"),
+    ])
 
 W, H, DUR = 1920, 1080, 60
 N = 8
@@ -129,6 +147,9 @@ def render(out, seed, preview=None):
     frames, events, done_t = simulate(seed)
     order = sorted(range(N), key=lambda i: done_t[i] if done_t[i] is not None else 1e9 - frames[-1][0][i])
     win = order[0]
+    NARR = make_narration(win, order[1], done_t[order[1]] - done_t[win])
+    CHUNKS = NARR.chunks()
+    FX = Particles(12)
     v = Video(out, FW, FH, DUR, preview, 120)
     a = v.audio
     a.music(0, 60, bpm=138, chords=((0, 4, 7), (5, 9, 12), (7, 11, 14), (9, 12, 16)), root=220.0, vol=0.6)
@@ -140,6 +161,8 @@ def render(out, seed, preview=None):
             a.add(t_, "thud", 100, 0.3)
         elif kind == "finish":
             a.add(t_, "bell", SCALE[16 - order.index(i)], 0.35 if i == win else 0.15)
+    a.buf *= 0.55
+    NARR.mix(a)
     cam = 0.0
     trip_caps = [(t_, i) for t_, k, i in events if k == "trip"]
     for f, (xs, modes, mts, t) in enumerate(frames):
@@ -249,12 +272,24 @@ def render(out, seed, preview=None):
                 st.draw(c, pose, X, yy - st.w, 1, expr)
             else:
                 st.draw(c, pose, X, st.ground_y(pose, yy), 1, expr)
+        for i in range(N):
+            if t > 2 and modes[i] in ("run", "mud") and (done_t[i] is None or t < done_t[i]) and (f + i) % 8 == 0:
+                FX.emit(xs[i] + i * 6 - 30, lane_y(i), 2, (0.6, 0.42, 0.3), speed=(30, 90), up=50,
+                        life=(0.3, 0.6), size=(4, 8), gravity=200, angle=math.pi, spread=1.0)
+            if done_t[i] is not None and abs(t - done_t[i]) < 0.5 / FPS and i == win:
+                FX.emit(L + 40, lane_y(i) - 150, 120, list(PALETTE), speed=(200, 700), up=400, life=(1.2, 2.4),
+                        size=(7, 12), gravity=500, kind="confetti")
+        c.save()
+        c.translate(-sx0, 0)
+        FX.step_draw(c, t)
+        c.restore()
         W = FW
         rank = sorted(range(N), key=lambda i: (done_t[i] if done_t[i] is not None and done_t[i] <= t else 1e9,
                                                -xs[i]))
         if PORTRAIT:
             c.restore()
             hud_portrait(c, t, xs, rank, done_t, win, order, trip_caps)
+            word_captions(c, CHUNKS, t, PW / 2, 580 if t < done_t[win] + 2.5 else 1500, 70)
             v.emit(f)
             continue
         # HUD: title, progress, ranking
@@ -290,7 +325,7 @@ def render(out, seed, preview=None):
             text(c, "GO!" if t >= 1.9 else "READY...", W / 2 - 200, 420, 120, (1, 1, 1))
         for t_, i in trip_caps:
             if 0 <= t - t_ < 1.6 and t_ < done_t[win]:
-                caption(c, f"{NAMES[i]} tripped!", W / 2 - 200, 1030, 44, 800, alpha=fade(t, t_, t_ + 1.6))
+                caption(c, f"{NAMES[i]} tripped!", W / 2 - 200, 300, 44, 800, alpha=fade(t, t_, t_ + 1.6))
                 break
         wt = done_t[win]
         if t > wt + 2.5:
@@ -298,6 +333,7 @@ def render(out, seed, preview=None):
             end_card(c, W, H, [(f"{NAMES[win].upper()} WINS!", 120, PALETTE[win]),
                                (f"by {done_t[second] - wt:.2f} s over {NAMES[second]}", 56, (1, 1, 1)),
                                ("Did your color win?", 44, (0.8, 0.8, 0.8))], t - wt - 2.5)
+        word_captions(c, CHUNKS, t, W / 2 - 200, 1040 if t < wt + 2.5 else 850, 64, maxw=1400)
         v.emit(f)
     v.finish()
 
@@ -336,7 +372,7 @@ def hud_portrait(c, t, xs, rank, done_t, win, order, trip_caps):
         text(c, "GO!" if t >= 1.9 else "READY...", W / 2, 520, 120, (1, 1, 1))
     for t_, i in trip_caps:
         if 0 <= t - t_ < 1.6 and t_ < done_t[win]:
-            caption(c, f"{NAMES[i]} tripped!", W / 2, 520, 56, 900, alpha=fade(t, t_, t_ + 1.6))
+            caption(c, f"{NAMES[i]} tripped!", W / 2, 455, 44, 900, alpha=fade(t, t_, t_ + 1.6))
             break
     wt = done_t[win]
     if t > wt + 2.5:

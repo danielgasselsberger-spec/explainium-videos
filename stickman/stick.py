@@ -101,8 +101,29 @@ class Stick:
         return ground - low - self.w / 2
 
     def draw(self, c, pose, x, y, face=1, expr="flat", color=None, alpha=1.0, belly=0.0, muscle=0.0,
-             hat=None):
+             hat=None, t=None, shadow=None, talk=False):
+        """t: enables breathing + blinking. shadow: ground y for a soft shadow. talk: mouth flaps."""
+        if t is not None:
+            pose = dict(pose)
+            pose["lean"] = pose["lean"] + 1.2 * math.sin(t * 2.4 + x * 0.01)
+            pose["head"] = pose["head"] + 2.0 * math.sin(t * 1.3 + x * 0.02)
+            if expr in ("flat", "smile", "sad") and ((t + x * 0.003) % 3.6) < 0.13:
+                expr = "blink"
+            if talk and expr != "blink" and (t * 9) % 2 < 1:
+                expr = "talk"
         j = self.joints(pose, x, y, face)
+        if shadow is not None:
+            col0 = color or self.color
+            h = max(0.0, shadow - max(j["foot_l"][1], j["foot_r"][1]))
+            k = max(0.25, 1 - h / (self.s * 1.5))
+            c.save()
+            c.translate(j["hip"][0], shadow + 3)
+            c.scale(1, 0.18)
+            c.new_path()
+            c.arc(0, 0, self.s * 0.32 * k, 0, 2 * math.pi)
+            c.restore()
+            c.set_source_rgba(0, 0, 0, 0.22 * k * alpha)
+            c.fill()
         col = color or self.color
         c.set_line_cap(cairo.LINE_CAP_ROUND)
         c.set_line_join(cairo.LINE_JOIN_ROUND)
@@ -150,7 +171,12 @@ class Stick:
         c.set_source_rgba(*col, alpha)
         ex = hx + face * r * 0.32
         for dx in (-0.22, 0.22):
-            if expr in ("sleep", "happy"):
+            if expr == "blink":
+                c.set_line_width(max(2, r * 0.1))
+                c.move_to(ex + dx * r * 1.4 - r * 0.1, hy - r * 0.15)
+                c.line_to(ex + dx * r * 1.4 + r * 0.1, hy - r * 0.15)
+                c.stroke()
+            elif expr in ("sleep", "happy"):
                 c.set_line_width(max(2, r * 0.12))
                 c.arc(ex + dx * r * 1.4, hy - r * 0.12, r * 0.13, math.pi * 1.1, math.pi * 1.9)
                 c.stroke()
@@ -174,7 +200,38 @@ class Stick:
             c.fill()
         elif expr == "sleep":
             pass
+        elif expr == "talk":
+            c.save()
+            c.translate(ex, my)
+            c.scale(1, 0.7)
+            c.arc(0, 0, r * 0.17, 0, 2 * math.pi)
+            c.restore()
+            c.fill()
         else:
             c.move_to(ex - r * 0.2, my)
             c.line_to(ex + r * 0.2, my)
             c.stroke()
+
+
+class Blend:
+    """Smoothly blends between successive target poses (per character)."""
+
+    def __init__(self, dur=0.22):
+        self.dur = dur
+        self.cur = None
+        self.src = None
+        self.tgt = None
+        self.t0 = 0.0
+
+    def __call__(self, target, t):
+        if self.tgt is None:
+            self.cur = self.src = self.tgt = dict(target)
+            self.t0 = t
+            return self.cur
+        if any(abs(target[k] - self.tgt[k]) > 25 for k in KEYS):
+            self.src = dict(self.cur)
+            self.t0 = t
+        self.tgt = dict(target)
+        u = ease((t - self.t0) / self.dur)
+        self.cur = lerp_pose(self.src, self.tgt, u) if u < 1 else dict(self.tgt)
+        return self.cur

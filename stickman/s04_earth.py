@@ -8,7 +8,24 @@ import math
 import cairo
 
 import stick as S
-from lib import SCALE, caption, end_card, fade, rounded, text
+from lib import (SCALE, Particles, camera, end_card, fade, narrated_sound, rounded, text, vignette,
+                 word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.3, "What if you dug a hole straight through the Earth, and jumped in?"),
+    (6.4, "You'd fall faster, and faster..."),
+    (11.5, "And the strange part: you'd feel weightless the whole way."),
+    (18.5, "Through the mantle. Into the core."),
+    (23.0, "At the center, you're flying at about twenty eight thousand kilometers per hour."),
+    (30.5, "Then gravity pulls you back, and you slow down."),
+    (38.6, "Forty two minutes later, you pop out on the other side of the planet."),
+    (46.0, "And then? You fall back. Forever."),
+    (51.0, "At least, if there were no air and no heat."),
+    (56.0, "Would you jump?"),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(4)
 
 W, H, DUR = 1080, 1920, 60
 CX, CY, R = W / 2, 1060, 430
@@ -58,8 +75,19 @@ def earth(c):
 
 def frame(c, t):
     bg(c)
-    text(c, "What if you jumped", W / 2, 150, 70)
-    text(c, "THROUGH the Earth?", W / 2, 235, 70, YEL)
+    ph = phase(t)
+    y_now = CY - R * math.cos(ph) if t >= T_JUMP else CY - R
+    zin = S.ease((t - T_JUMP) / 2.0) * (1 - S.ease((t - 47) / 2.5))
+    z = 1 + 0.35 * zin
+    fy = H / 2 + (y_now - H / 2) * zin
+    camera(c, W, H, t, zoom=z, fx=CX, fy=min(max(fy, 500), 1600))
+    scene(c, t)
+    c.restore()
+    vignette(c, W, H, 0.4)
+    hud(c, t)
+
+
+def scene(c, t):
     earth(c)
     ph = phase(t)
     if t < T_JUMP:
@@ -72,13 +100,32 @@ def frame(c, t):
     else:
         y = CY - R * math.cos(ph)
         expr = "shock" if math.cos(ph) > 0.3 else ("happy" if math.cos(ph) > -0.3 else "flat")
-        st.draw(c, S.ARMS_UP, CX, y - 10, 1, expr)
+        sp = abs(math.sin(ph))
+        c.set_source_rgba(1, 1, 1, 0.35 * sp)
+        c.set_line_width(3)
+        for k in range(8):
+            ly = y - 200 + ((k * 61 + t * 2500 * (1 if math.sin(ph) > 0 else -1)) % 400)
+            lx = CX - 18 + (k * 13) % 36
+            c.move_to(lx, ly)
+            c.line_to(lx, ly - 60 * sp)
+        c.stroke()
+        if abs(math.cos(ph)) < 0.55 and int(t * 30) % 2 == 0:
+            FX.emit(CX + FX.r.uniform(-20, 20), y + FX.r.uniform(-30, 30), 2, [(1, 0.8, 0.3), (1, 0.5, 0.15)],
+                    speed=(60, 200), up=0, life=(0.3, 0.7), size=(3, 6), gravity=0)
+        st.draw(c, S.ARMS_UP, CX, y - 10, 1, expr, t=t)
+    FX.step_draw(c, t)
+
+
+def hud(c, t):
+    ph = phase(t)
+    text(c, "What if you jumped", W / 2, 150, 70)
+    text(c, "THROUGH the Earth?", W / 2, 235, 70, YEL)
     # HUD
     tm = tau_min(t)
     v = VMAX_KMH * abs(math.sin(ph)) if t >= T_JUMP else 0.0
     depth = R_KM * (1 - math.cos(ph)) if t >= T_JUMP else 0.0
     rounded(c, 50, 1540, 300, 130, 22)
-    c.set_source_rgba(1, 1, 1, 0.08)
+    c.set_source_rgba(0.02, 0.04, 0.1, 0.8)
     c.fill()
     rounded(c, 390, 1540, 300, 130, 22)
     c.fill()
@@ -90,27 +137,19 @@ def frame(c, t):
     text(c, f"{v:,.0f} km/h", 540, 1645, 44, YEL)
     text(c, "DEPTH", 880, 1585, 26, (0.6, 0.65, 0.75))
     text(c, f"{min(depth, 2 * R_KM):,.0f} km", 880, 1645, 44)
-    beats = [(0.3, 5.8, "Imagine a tunnel straight through the planet."),
-             (7, 14, "You fall faster... and faster..."),
-             (15, 22, "And you feel weightless the whole way down."),
-             (23, 29.5, "At the center: about 28,000 km/h."),
-             (30.5, 38, "Now gravity pulls you BACK. You slow down."),
-             (39.5, 47, "42 minutes later: you pop out on the other side!"),
-             (47.5, 55.5, "...and fall back. Forever.")]
-    for a, b, s in beats:
-        al = fade(t, a, b)
-        if al:
-            caption(c, s, W / 2, 1770, 46, 980, alpha=al)
     text(c, "Thought experiment: no air, no heat, uniform Earth", W / 2, 1880, 26, (0.55, 0.6, 0.7),
          bold=False)
-    if 43.5 < t < 47:
-        text(c, "Other side!", CX + 150, CY + R + 20, 40, YEL, alpha=fade(t, 43.5, 47))
     if t > 56:
         end_card(c, W, H, [("42 MINUTES", 110, YEL), ("to the other side of the planet", 50, (1, 1, 1)),
                            ("Would you jump?", 44, (0.8, 0.8, 0.8))], t - 56)
+    word_captions(c, CHUNKS, t, W / 2, 1780 if t < 56 else 1450, 70)
 
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     a.music(0, 60, bpm=88, chords=((0, 3, 7), (5, 8, 12), (3, 7, 10), (7, 10, 14)), root=174.6, vol=0.45)
     a.add(4.6, "whoosh", 500, 0.4)
     # rising / falling whoosh with speed

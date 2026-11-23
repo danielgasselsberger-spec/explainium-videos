@@ -3,6 +3,13 @@
 Erstellt am 23.11.2026. 10 Videos à 60 Sekunden: 8 Shorts (1080×1920) und 2 normale Videos (1920×1080).
 Alles wird per Code erzeugt (Figuren, Animation, Musik, Soundeffekte), siehe `stickman/`.
 
+**Sprecher:** Microsoft-Stimme „Andrew“ (en-US-AndrewNeural, über `edge-tts`) mit Wort-für-Wort-Untertiteln
+im Shorts-Stil; das gerade gesprochene Wort ist gelb. Die Musik wird unter der Stimme leiser.
+Die Sprachaufnahmen liegen in `stickman/voice_cache/`; ein erneutes Erzeugen braucht deshalb keine Internetverbindung.
+
+**Animation:** weiche Posenübergänge, Atmen, Blinzeln, Mundbewegung beim Sprechen, Schatten, Partikel
+(Staub, Funken, Konfetti, Regen, Wasser), Kamera-Zoom und Wackeln bei wichtigen Momenten, Bewegungsspuren im Sprung.
+
 ## 1. Was sind Stickman-Videos?
 
 Animationen mit Strichmännchen: Kopf als Kreis, Körper aus Linien. Die Figuren sind leicht zu animieren und auf
@@ -98,8 +105,8 @@ Count the fails 😅 How many attempts would you need? #stickman #parkour #anima
 ## 5. Neu erzeugen oder abwandeln
 
 ```bash
-pip install pycairo numpy   # einmalig; ffmpeg muss installiert sein
-cd stickman && ./render_all.sh && ./render_shorts.sh   # erzeugt alle Videos nach stickman_videos/
+pip install pycairo numpy edge-tts   # einmalig; ffmpeg muss installiert sein
+cd stickman && ./render_all.sh   # erzeugt alle 12 Videos nach stickman_videos/
 ```
 
 `stickman/stick.py` enthält die Figur mit Gelenken, die Posen und die Bewegungsabläufe (Gehen, Rennen,

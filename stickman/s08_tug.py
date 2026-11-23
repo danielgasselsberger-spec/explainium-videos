@@ -2,7 +2,25 @@
 import math
 
 import stick as S
-from lib import INK, PALETTE, PAPER, SCALE, caption, end_card, fade, rounded, text
+from lib import (INK, PALETTE, PAPER, SCALE, Particles, camera, end_card, narrated_sound, pulse, rounded, text,
+                 word_captions)
+from tts import Narration
+
+NARR = Narration([
+    (0.3, "One really strong guy, versus one hundred people."),
+    (3.4, "Round one: ten people. Too easy."),
+    (8.2, "Every five seconds, ten more join."),
+    (17.8, "Forty people, and he's still not moving!"),
+    (26.0, "Sixty. Seventy."),
+    (32.8, "He's starting to slip..."),
+    (42.8, "One against one hundred. This is it."),
+    (48.2, "He takes a deep breath..."),
+    (51.9, "...and just lets go."),
+    (55.6, "Work smart, not hard."),
+])
+CHUNKS = NARR.chunks()
+FX = Particles(9)
+JOINS = [3 + 5 * k for k in range(10)]
 
 W, H, DUR = 1080, 1920, 60
 FLOOR = 1520
@@ -34,6 +52,16 @@ SLOTS = slots()
 
 
 def frame(c, t):
+    strain = min(1.0, team_size(t) / 100)
+    shake = (4 * strain if t < T_LET else 0) + pulse(t, T_LET + 0.6, 0.8, 20) + sum(pulse(t, j, 0.3, 6) for j in JOINS)
+    z = 1 + 0.06 * S.ease((t - 44) / 6) if t < T_LET else 1.06 - 0.06 * S.ease((t - T_LET) / 1.0)
+    camera(c, W, H, t, zoom=z, fy=FLOOR - 400, shake=shake)
+    scene(c, t)
+    c.restore()
+    hud(c, t)
+
+
+def scene(c, t):
     c.set_source_rgb(*PAPER)
     c.paint()
     c.set_source_rgb(0.55, 0.75, 0.45)
@@ -92,13 +120,24 @@ def frame(c, t):
         st.draw(c, p, x + dx, y, -1, "scream" if not let else "shock")
     hero.draw(c, hp, hero_x + wob, hy, 1,
               ("smile" if strain < 0.35 else "flat" if strain < 0.75 else "scream") if not let else "happy",
-              muscle=1.0)
+              muscle=1.0, t=t, shadow=FLOOR)
+    if not let and strain > 0.2 and int(t * 30) % 3 == 0:
+        FX.emit(hj["foot_l"][0] + 20, FLOOR, 2, (0.45, 0.4, 0.3), speed=(60, 160), up=80, life=(0.3, 0.6),
+                size=(4, 8), gravity=400, angle=0.0, spread=1.2)
+    if abs(t - (T_LET + 0.6)) < 0.5 / 30:
+        FX.emit(820, FLOOR - 40, 70, (0.5, 0.45, 0.35), speed=(150, 500), up=200, life=(0.5, 1.2), size=(6, 14),
+                gravity=500, angle=-math.pi / 2, spread=2.8)
     if 0.6 < strain and not let:
         for k in range(3):
             yy = hj["head"][1] - 20 + ((t * 160 + k * 40) % 120)
             c.set_source_rgb(0.4, 0.65, 0.95)
             c.arc(hj["head"][0] - 50 - k * 14, yy, 9, 0, 2 * math.pi)
             c.fill()
+    FX.step_draw(c, t)
+
+
+def hud(c, t):
+    n = team_size(t)
     # HUD
     rounded(c, W / 2 - 300, 330, 600, 150, 30)
     c.set_source_rgba(0, 0, 0, 0.75)
@@ -106,19 +145,17 @@ def frame(c, t):
     text(c, f"1  vs  {n}", W / 2, 435, 100, (1, 0.82, 0.25))
     text(c, "1 strong guy vs 100", W / 2, 165, 72, INK)
     text(c, "+10 every 5 seconds", W / 2, 250, 52, RED)
-    beats = [(3.2, 10, "1 vs 10: too easy."), (18, 24, "1 vs 40: still not moving!"),
-             (33, 39, "1 vs 70: he's starting to slip..."), (43, 51.5, "1 vs 100. This is it."),
-             (52, 56, "Plot twist: he just let go.")]
-    for a, b, s in beats:
-        al = fade(t, a, b)
-        if al:
-            caption(c, s, W / 2, 1780, 54, 980, alpha=al)
     if t > 56:
         end_card(c, W, H, [("Work smart,", 90, (1, 1, 1)), ("not hard.", 110, (1, 0.82, 0.25)),
                            ("Who would YOU bet on?", 44, (0.8, 0.8, 0.8))], t - 56)
+    word_captions(c, CHUNKS, t, W / 2, 1800 if t < 56 else 1450, 74)
 
 
 def sound(a):
+    narrated_sound(a, NARR, _music)
+
+
+def _music(a):
     a.music(0, T_LET, bpm=110, chords=((0, 3, 7), (5, 8, 12), (7, 10, 14), (3, 7, 10)), root=196.0, vol=0.6)
     for k in range(10):
         tt = 3 + 5 * k
