@@ -1,27 +1,13 @@
 import React from "react";
-import { AbsoluteFill, Audio, Sequence, continueRender, delayRender, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { ThreeCanvas } from "@remotion/three";
-import { useThree } from "@react-three/fiber";
-import { PostFX } from "./scenes/common";
-import * as THREE from "three";
-import timeline from "./timeline.json";
-import { clamp, easeInOut, lerp, lerpV, range, smooth } from "./lib";
-import { ArmShot, HIT_END, HealedShot, HitShot, LOOK_POSE, PressShot, REST, RaiseLoop, TimeLapse, ZoomIntoArm, bruiseAt } from "./scenes/CharShots";
-import { LOOK, animPose, pose } from "./scenes/Character";
-import { Capillary, HairCompare, Macrophage, Network, NerveFire, OxygenCell, PoolTopView, SkinDive, Swelling, ThroughSkin, TrappedBetweenCells } from "./scenes/Macro";
+import { FPS, Shot, Sfx, Timeline, makeVideo } from "../../engine/VideoBase";
+import timelineJson from "./timeline.json";
+import { easeInOut, lerp, lerpV, range, smooth } from "../../engine/lib";
+import { LOOK, animPose, pose } from "../../engine/Character";
+import { ArmShot, HIT_END, HealedShot, HitShot, LOOK_POSE, PressShot, RaiseLoop, TimeLapse, ZoomIntoArm } from "./CharShots";
+import { Capillary, HairCompare, Macrophage, Network, NerveFire, OxygenCell, PoolTopView, SkinDive, Swelling, ThroughSkin, TrappedBetweenCells } from "./Macro";
 
-export const FPS = 30;
-export const DURATION_FRAMES = timeline.frames;
-const TOTAL = timeline.frames / FPS;
-
-// ---------- font ----------
-const fontHandle = typeof document !== "undefined" ? delayRender("font") : 0;
-if (typeof document !== "undefined") {
-  const f = new FontFace("InterX", `url(${staticFile("fonts/Inter-ExtraBold.otf")})`, { weight: "800" });
-  f.load().then((ff) => { (document as any).fonts.add(ff); continueRender(fontHandle); }).catch(() => continueRender(fontHandle));
-}
-
-type Shot = { a: number; b: number; kind: "char" | "macro"; el: (t: number, d: number, gt: number) => React.ReactNode };
+// "How Your Body Makes a Bruise" — reference video for the /video skill
+const timeline = timelineJson as Timeline;
 
 const pain = pose({ eyeYaw: 0.1, eyePitch: -0.1, lid: 0.25, brow: -1, mouth: 0.75, smile: 0, head: [0.05, -0.15, 0.12], body: [0, -0.06, 0] });
 const relief = (t: number) =>
@@ -74,10 +60,10 @@ export const SHOTS: Shot[] = [
   { a: 57.3, b: 59.0, kind: "macro", el: (t, d, gt) => <Macrophage t={t} d={d} gt={gt} phase="digest" /> },
   { a: 59.0, b: 60.3, kind: "macro", el: (t, d, gt) => <SkinDive t={t} d={d} gt={gt} reverse /> },
   { a: 60.3, b: 62.0, kind: "char", el: (t, d, gt) => <HealedShot t={t} d={d} gt={gt} /> },
-  { a: 62.0, b: TOTAL, kind: "char", el: (t, d, gt) => <RaiseLoop t={t} d={d} gt={gt} /> },
+  { a: 62.0, b: timeline.frames / FPS, kind: "char", el: (t, d, gt) => <RaiseLoop t={t} d={d} gt={gt} /> },
 ];
 
-const SFX: [number, string, number][] = [
+const SFX: Sfx[] = [
   [0.58, "thud", 0.75], [1.95, "whoosh", 0.45], [5.15, "pop", 0.6], [5.8, "whoosh", 0.25], [8.75, "drop", 0.5], [12.0, "whoosh", 0.35],
   [15.45, "whoosh", 0.45], [17.9, "plop", 0.45], [18.35, "plop", 0.4], [18.8, "plop", 0.4], [21.9, "shimmer", 0.4], [23.6, "clink", 0.5],
   [24.75, "whoosh", 0.4], [29.95, "timelapse", 0.45], [32.0, "whoosh", 0.35], [34.4, "drop", 0.45], [39.37, "pop", 0.55], [40.5, "whoosh", 0.4],
@@ -85,88 +71,4 @@ const SFX: [number, string, number][] = [
   [59.0, "whoosh", 0.4], [60.45, "shimmer", 0.4],
 ];
 
-// music level: ~10 % under the voice, ~20 % in pauses, soft ramps, fade in/out
-const speech = timeline.sentences.map((s) => [s.speechStart, s.speechEnd]);
-function musicVolume(t: number) {
-  let dmin = 1e9;
-  for (const [a, b] of speech) {
-    const d = t < a ? a - t : t > b ? t - b : 0;
-    dmin = Math.min(dmin, d);
-  }
-  const v = 0.1 + 0.1 * smooth(range(dmin, 0.12, 0.55));
-  return v * smooth(range(t, 0, 0.8)) * smooth(range(TOTAL - t, 0, 1.0));
-}
-
-const Subtitles: React.FC<{ t: number }> = ({ t }) => {
-  const subs = timeline.subs;
-  let cur = subs.find((s, i) => t >= (i === 0 ? 0 : s.s - 0.05) && t < s.e);
-  if (!cur) return null;
-  const age = cur === subs[0] ? Math.max(1, t) : t - cur.s + 0.05;
-  const pop = 0.9 + 0.1 * smooth(age / 0.12);
-  return (
-    <div style={{ position: "absolute", top: 1920 * 0.72, left: 0, right: 0, transform: "translateY(-50%)", display: "flex", justifyContent: "center" }}>
-      <div
-        style={{
-          fontFamily: "InterX, Inter, sans-serif", fontWeight: 800, fontSize: 82, lineHeight: 1.1, color: "white", textAlign: "center", maxWidth: 940,
-          textShadow: "0 4px 18px rgba(0,0,0,0.5), 0 2px 5px rgba(0,0,0,0.55), 0 0 2px rgba(0,0,0,0.35)", transform: `scale(${pop})`, opacity: clamp(age / 0.06 + 0.4), letterSpacing: -0.5,
-        }}
-      >
-        {cur.text}
-      </div>
-    </div>
-  );
-};
-
-// re-render after all children (EffectComposer) registered their frame callbacks
-const LateAdvance: React.FC<{ frame: number }> = ({ frame }) => {
-  const advance = useThree((s) => s.advance);
-  React.useEffect(() => { advance(performance.now()); }, [frame, advance]);
-  return null;
-};
-
-export const Science01: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
-  const gt = frame / FPS;
-  const idx = Math.max(0, SHOTS.findIndex((s) => gt >= s.a && gt < s.b));
-  const sh = SHOTS[idx];
-  const t = gt - sh.a;
-  const d = sh.b - sh.a;
-  // zoom-blur transitions between outside (character) and inside (macro)
-  const next = SHOTS[idx + 1];
-  const prev = SHOTS[idx - 1];
-  const TR = 0.22;
-  let scale = 1, blur = 0, flash = 0;
-  if (next && next.kind !== sh.kind && d - t < TR) {
-    const k = 1 - (d - t) / TR;
-    scale = 1 + 0.35 * k * k; blur = 10 * k; flash = 0.5 * k;
-  }
-  if (prev && prev.kind !== sh.kind && t < TR) {
-    const k = 1 - t / TR;
-    scale = 1 + 0.25 * k * k; blur = 8 * k; flash = Math.max(flash, 0.5 * k);
-  }
-  return (
-    <AbsoluteFill style={{ backgroundColor: "#7cc8f2" }}>
-      <AbsoluteFill style={{ transform: `scale(${scale})`, filter: blur > 0.1 ? `blur(${blur}px)` : undefined }}>
-        <ThreeCanvas width={width} height={height} gl={{ antialias: true, preserveDrawingBuffer: true }} dpr={1}>
-          <React.Fragment key={idx}>{sh.el(t, d, gt)}</React.Fragment>
-          <PostFX />
-          <LateAdvance frame={frame} />
-        </ThreeCanvas>
-      </AbsoluteFill>
-      {flash > 0.01 && <AbsoluteFill style={{ background: "radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,190,235,0.5) 45%, rgba(255,255,255,0) 75%)", opacity: flash }} />}
-      <Subtitles t={gt} />
-      {timeline.sentences.map((s) => (
-        <Sequence key={s.i} from={Math.round(s.start * FPS)} durationInFrames={Math.ceil((s.speechEnd - s.start + 0.6) * FPS)}>
-          <Audio src={staticFile(`voice/s${String(s.i).padStart(2, "0")}.mp3`)} volume={1} />
-        </Sequence>
-      ))}
-      <Audio src={staticFile("musik.mp3")} volume={(f) => musicVolume(f / FPS)} />
-      {SFX.map(([at, name, vol], i) => (
-        <Sequence key={"sfx" + i} from={Math.round(at * FPS)} durationInFrames={45}>
-          <Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />
-        </Sequence>
-      ))}
-    </AbsoluteFill>
-  );
-};
+export const science01 = { id: "Science01", slug: "science01", frames: timeline.frames, component: makeVideo({ slug: "science01", timeline, shots: SHOTS, sfx: SFX }) };

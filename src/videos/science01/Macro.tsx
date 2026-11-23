@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { Cam, MacroLights, Post } from "./common";
-import { Backdrop, Glow, glowTexture, Inst, Instances, LiveBlob, Motes, blobGeometry, rbcGeometry, tubeGeo, useRbcMaterial } from "./prims";
-import { clamp, easeIn, easeInOut, easeOut, lerp, lerpV, mixColor, noise3, range, rng, smooth } from "../lib";
+import { Cam, MacroLights, Post } from "../../engine/common";
+import { Backdrop, Glow, glowTexture, Inst, Instances, LiveBlob, Motes, blobGeometry, rbcGeometry, tubeGeo, useRbcMaterial } from "../../engine/prims";
+import { clamp, easeIn, easeInOut, easeOut, lerp, lerpV, mixColor, noise3, range, rng, smooth } from "../../engine/lib";
 
 type S = { t: number; d: number; gt: number };
 const dist = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);

@@ -1,14 +1,14 @@
-// usage: node tools/stills.mjs scale frame1 frame2 ...   -> stills/fNNNN.jpg + stills/sheet.jpg
+// usage: node tools/stills.mjs <CompositionId> <scale> <frame1> <frame2> ...   -> stills/fNNNN.jpg + stills/sheet.jpg
 import { bundle } from "@remotion/bundler";
 import { renderStill, selectComposition, openBrowser } from "@remotion/renderer";
 import path from "node:path";
 import { execSync } from "node:child_process";
-const [scale, ...frames] = process.argv.slice(2);
+const [compId, scale, ...frames] = process.argv.slice(2);
 const serveUrl = await bundle({ entryPoint: path.resolve("src/index.ts") });
 const browserExecutable = "/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell";
 const chromiumOptions = { gl: "swangle" };
 const browser = await openBrowser("chrome", { browserExecutable, chromiumOptions });
-const composition = await selectComposition({ serveUrl, id: "Science01", puppeteerInstance: browser, chromiumOptions });
+const composition = await selectComposition({ serveUrl, id: compId, puppeteerInstance: browser, chromiumOptions });
 const outs = [];
 const queue = frames.map(Number);
 const work = async () => {

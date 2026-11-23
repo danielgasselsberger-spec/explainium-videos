@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { bruiseStops, clamp, easeInOut, lerp, mixColor, range, rng, smooth } from "../lib";
+import { bruiseStops, clamp, easeInOut, lerp, mixColor, range, rng, smooth } from "./lib";
 
 export type Pose = {
   lw: number[]; // left wrist target (screen-right arm, carries the bruise)
@@ -168,8 +168,8 @@ const Bone: React.FC<{ a: THREE.Vector3; b: THREE.Vector3; r: number; mat: THREE
   );
 };
 
-export const Character: React.FC<{ p: Pose; t: number; bruise: number; bruiseSize?: number; squash?: number; ice?: number; pressDepth?: number }> = ({
-  p, t, bruise, bruiseSize = 1, squash = 0, ice = 0, pressDepth = 0,
+export const Character: React.FC<{ p: Pose; t: number; bruise?: number; bruiseSize?: number; squash?: number; ice?: number; pressDepth?: number; table?: boolean; children?: React.ReactNode }> = ({
+  p, t, bruise = 0, bruiseSize = 1, squash = 0, ice = 0, pressDepth = 0, table = true, children,
 }) => {
   const m = useMats();
   const tex = useForearmTexture(bruise, bruiseSize);
@@ -333,7 +333,7 @@ export const Character: React.FC<{ p: Pose; t: number; bruise: number; bruiseSiz
         </mesh>
       </group>
       {/* table */}
-      <group position={[0, -2.95, 0.6]}>
+      {table && <group position={[0, -2.95, 0.6]}>
         <mesh material={m.tableTop} position={[0, 0.12, 0]}>
           <boxGeometry args={[7, 0.06, 2.4]} />
         </mesh>
@@ -343,8 +343,9 @@ export const Character: React.FC<{ p: Pose; t: number; bruise: number; bruiseSiz
         <mesh material={m.table} position={[0, -0.1, 1.2]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.1, 0.1, 7, 16]} />
         </mesh>
-      </group>
+      </group>}
       {ice > 0 && <IcePack p={p} ice={ice} t={t} />}
+      {children}
     </group>
   );
 };

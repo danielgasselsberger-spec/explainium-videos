@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { clamp, noise3, rng } from "../lib";
+import { clamp, noise3, rng } from "./lib";
 
 // ---------- gradient backdrop sphere ----------
 export const Backdrop: React.FC<{ top: string; bottom: string; radius?: number }> = ({ top, bottom, radius = 120 }) => {

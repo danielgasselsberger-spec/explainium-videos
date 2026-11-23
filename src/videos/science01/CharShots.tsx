@@ -1,9 +1,9 @@
 import React from "react";
 import * as THREE from "three";
-import { Character, LOOK, P, Pose, RAISED, animPose, bruisePoint, pose } from "./Character";
-import { Cam, Post, StudioLights } from "./common";
-import { Backdrop, Glow } from "./prims";
-import { clamp, easeIn, easeInOut, easeOut, lerp, lerpV, range, smooth } from "../lib";
+import { Character, LOOK, P, Pose, RAISED, animPose, bruisePoint, pose } from "../../engine/Character";
+import { Cam, Post, StudioLights } from "../../engine/common";
+import { Backdrop, Glow } from "../../engine/prims";
+import { clamp, easeIn, easeInOut, easeOut, lerp, lerpV, range, smooth } from "../../engine/lib";
 
 // ---------- global bruise stage over the whole video ----------
 export function bruiseAt(gt: number) {
