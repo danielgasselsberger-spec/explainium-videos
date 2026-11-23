@@ -1,0 +1,4 @@
+node_modules/
+tools/*.wav
+.remotion/
+stills/
