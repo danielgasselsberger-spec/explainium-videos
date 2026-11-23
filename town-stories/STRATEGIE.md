@@ -39,7 +39,7 @@ Titelformel: **Neugier plus Zeit plus Teil-Nummer**, z. B. *"Every Night at 3AM 
 ## 4. Pipeline (läuft komplett in der Cloud, kostenlos)
 1. `serie/bibel.md`: Welt-Regel, Figuren, Farben, Folgen und Abstimmungsergebnisse
 2. `folgeNN/skript.md`: Skript (Englisch), Titel, Beschreibung, angepinnter Kommentar
-3. `tools/voice_lines.py`: Kokoro-Sprachausgabe, kindliche Stimme (af_heart, +3,5 Halbtöne)
+3. `tools/voice_lines.py`: Kokoro-Sprachausgabe, kindliche Stimme (af_heart, +2 Halbtöne)
 4. `folgeNN/shots.py` + `tools/world.py`: Blender-3D-Szenen (Klötzchen-Stil), Rendern mit EEVEE
 5. `tools/compose.py`: 1080×1920, Untertitel Wort für Wort, Abstimmungseinblendung, Musik, MP4
 6. Einplanen über Metricool (YouTube Shorts, TikTok, Instagram)
