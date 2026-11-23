@@ -7,6 +7,10 @@ Alles wird per Code erzeugt (Figuren, Animation, Musik, Soundeffekte), siehe `st
 im Shorts-Stil; das gerade gesprochene Wort ist gelb. Die Musik wird unter der Stimme leiser.
 Die Sprachaufnahmen liegen in `stickman/voice_cache/`; ein erneutes Erzeugen braucht deshalb keine Internetverbindung.
 
+**Hook:** Jedes Video beginnt mit einem 1,6–2,2 Sekunden langen Vorgriff auf den spannendsten Moment:
+leicht herangezoomt, roter Balken mit Hook-Text, Knall-Effekt, ein kurzer Satz von Andrew, weißer Blitz als Schnitt.
+Danach startet das ganze Video. Die Videos sind dadurch 61,6–62,2 Sekunden lang.
+
 **Animation:** weiche Posenübergänge, Atmen, Blinzeln, Mundbewegung beim Sprechen, Schatten, Partikel
 (Staub, Funken, Konfetti, Regen, Wasser), Kamera-Zoom und Wackeln bei wichtigen Momenten, Bewegungsspuren im Sprung.
 
@@ -106,7 +110,7 @@ Count the fails 😅 How many attempts would you need? #stickman #parkour #anima
 
 ```bash
 pip install pycairo numpy edge-tts   # einmalig; ffmpeg muss installiert sein
-cd stickman && ./render_all.sh   # erzeugt alle 12 Videos nach stickman_videos/
+cd stickman && ./render_all.sh && python3 add_hooks.py   # rendert nach stickman/build/, Hooks dann nach stickman_videos/
 ```
 
 `stickman/stick.py` enthält die Figur mit Gelenken, die Posen und die Bewegungsabläufe (Gehen, Rennen,

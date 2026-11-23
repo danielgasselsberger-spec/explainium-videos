@@ -2,7 +2,7 @@
 # Renders all stickman videos (10 Shorts + 2 landscape) with Andrew narration into ../stickman_videos/
 set -e
 cd "$(dirname "$0")"
-OUT=../stickman_videos
+OUT=build
 mkdir -p "$OUT"
 cat <<JOBS | xargs -P 3 -I{} sh -c '{}'
 python3 s01_overthinker.py $OUT/SM01_overthinker_vs_doer.mp4
