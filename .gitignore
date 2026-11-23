@@ -2,5 +2,6 @@ node_modules/
 tools/*.wav
 .remotion/
 stills/
+out/parts/
 out/*.log
 out/preview/
