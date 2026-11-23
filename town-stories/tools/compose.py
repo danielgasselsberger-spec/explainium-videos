@@ -35,7 +35,7 @@ WrapStyle: 2
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Sub,Inter ExtraBold,96,&H00FFFFFF,&H00FFFFFF,&H00000000,&H90000000,1,0,0,0,100,100,0,0,1,9,4,2,60,60,560,1
+Style: Sub,Inter ExtraBold,82,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,7,3,2,70,70,640,1
 Style: Badge,Inter ExtraBold,44,&H00FFFFFF,&H00FFFFFF,&H00000000,&HB0000000,1,0,0,0,100,100,1,0,3,14,0,8,40,40,110,1
 Style: Opt,Inter ExtraBold,54,&H00FFFFFF,&H00FFFFFF,&H00141414,&H00000000,1,0,0,0,100,100,0,0,3,22,0,5,60,60,0,1
 Style: Big,Inter ExtraBold,110,&H0028C9FF,&H00FFFFFF,&H00000000,&H90000000,1,0,0,0,100,100,0,0,1,10,5,8,40,40,240,1
@@ -45,17 +45,23 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 ev = []
 YEL = '&H0028E1FF&'
+WJ = json.load(open(f'{d}/words.json')) if os.path.exists(f'{d}/words.json') else None
 for li, line in enumerate(L):
-    wt = word_times(line)
-    groups = [wt[i:i + 3] for i in range(0, len(wt), 3)]
+    wt = [tuple(x) for x in WJ[li]] if WJ else word_times(line)
+    groups, cur = [], []
+    for w in wt:  # max 2 words, break after punctuation
+        cur.append(w)
+        if len(cur) == 2 or re.search(r'[.,:!?]$', w[0]):
+            groups.append(cur); cur = []
+    if cur: groups.append(cur)
     for g in groups:
         for wi, (w, a, b) in enumerate(g):
-            end = b if wi < len(g) - 1 else (g[-1][2] + 0.15)
+            end = g[wi + 1][1] if wi < len(g) - 1 else g[-1][2] + 0.12
             parts = []
             for wj, (w2, _, _) in enumerate(g):
                 w2u = w2.upper()
                 if wj == wi:
-                    parts.append(r'{\c' + YEL + r'\fscx112\fscy112\t(0,90,\fscx100\fscy100)}' + w2u + r'{\c&H00FFFFFF&\fscx100\fscy100}')
+                    parts.append(r'{\c' + YEL + r'\fscx108\fscy108\t(0,80,\fscx100\fscy100)}' + w2u + r'{\c&H00FFFFFF&\fscx100\fscy100}')
                 else:
                     parts.append(w2u)
             ev.append(f'Dialogue: 1,{ts(a)},{ts(end)},Sub,,0,0,0,,' + ' '.join(parts))
