@@ -4,5 +4,6 @@ import { science02 } from "./science02/Video";
 import { science03 } from "./science03/Video";
 import { science04 } from "./science04/Video";
 import { science05 } from "./science05/Video";
+import { science06 } from "./science06/Video";
 
-export const VIDEOS = [science01, science02, science03, science04, science05];
+export const VIDEOS = [science01, science02, science03, science04, science05, science06];
