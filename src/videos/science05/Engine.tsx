@@ -369,7 +369,7 @@ export const SHOTS = [
   { a: 54.3, b: 56.17, kind: "char" as const, el: (t: number, d: number, gt: number) => <CrankShotC t={t} d={d} gt={gt} /> },
   { a: 56.17, b: 59.98, kind: "macro" as const, el: (t: number, d: number) => <CrankWheels t={t} d={d} cam={mv([-6, 1.6, 10], [-3, 0.6, 9], t, d, [0, -0.8, 0], 44)} /> },
   { a: 59.98, b: 60.36, kind: "macro" as const, el: (t: number, d: number) => <CrankWheels t={t} d={d} cam={mv([3, 1, 9], [2, 0.8, 8], t, d, [1, -0.9, 0], 44)} /> },
-  { a: 60.36, b: 63.9, kind: "char" as const, el: (t: number, d: number, gt: number) => <HookShotC t={t} d={d} gt={gt} /> },
+  { a: 60.36, b: 63.9, kind: "char" as const, el: (t: number, d: number, gt: number) => <HookShotC t={Math.max(0, d - t - 1 / 30)} d={d} gt={0} /> },
 ];
 
 export const SFX: [number, string, number][] = [
