@@ -1,0 +1,20 @@
+> Start a car engine.
+Inside, pistons move up and down about thirty times a second.
+Every piston runs through the same four steps, called the four-stroke cycle.
+> Now take in air.
+The piston drops down and the intake valve opens.
+It pulls in air and a fine mist of fuel.
+> Squeeze it.
+The valves close and the piston rises, squeezing the mix into a tenth of its space.
+Squeezed air gets hot, and the mix is ready to burn.
+> Light the spark.
+A spark plug fires, a tiny lightning bolt that ignites the mix in a thousandth of a second.
+The burning gas expands and shoves the piston down with huge force.
+> Push out the exhaust.
+The exhaust valve opens, and the piston rises again to push the burnt gas out.
+> Repeat, four strokes at a time.
+Each cylinder fires once every two turns of the crankshaft.
+A four-cylinder engine fires about fifty times a second.
+> Turn the wheels.
+The up-and-down motion turns the crankshaft, and the crankshaft turns the wheels.
+From a few drops of fuel to a whole car moving. So go ahead and...
