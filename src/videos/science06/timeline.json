@@ -1,0 +1,1480 @@
+{
+ "fps": 30,
+ "duration": 64.144,
+ "frames": 1924,
+ "sentences": [
+  {
+   "i": 0,
+   "text": "Feel your heartbeat.",
+   "start": 0.0,
+   "speechStart": 0.1,
+   "speechEnd": 0.922,
+   "words": [
+    {
+     "w": "Feel",
+     "s": 0.1,
+     "e": 0.355
+    },
+    {
+     "w": "your",
+     "s": 0.366,
+     "e": 0.459
+    },
+    {
+     "w": "heartbeat",
+     "s": 0.47,
+     "e": 0.922
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "text": "Your heart beats about a hundred thousand times a day.",
+   "start": 1.872,
+   "speechStart": 1.972,
+   "speechEnd": 4.136,
+   "words": [
+    {
+     "w": "Your",
+     "s": 1.972,
+     "e": 2.157
+    },
+    {
+     "w": "heart",
+     "s": 2.168,
+     "e": 2.412
+    },
+    {
+     "w": "beats",
+     "s": 2.423,
+     "e": 2.608
+    },
+    {
+     "w": "about",
+     "s": 2.62,
+     "e": 2.817
+    },
+    {
+     "w": "a",
+     "s": 2.828,
+     "e": 2.851
+    },
+    {
+     "w": "hundred",
+     "s": 2.863,
+     "e": 3.164
+    },
+    {
+     "w": "thousand",
+     "s": 3.175,
+     "e": 3.534
+    },
+    {
+     "w": "times",
+     "s": 3.546,
+     "e": 3.812
+    },
+    {
+     "w": "a",
+     "s": 3.824,
+     "e": 3.87
+    },
+    {
+     "w": "day",
+     "s": 3.881,
+     "e": 4.136
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "text": "With each beat, it pushes about seventy milliliters of blood out into your body.",
+   "start": 4.416,
+   "speechStart": 4.516,
+   "speechEnd": 8.22,
+   "words": [
+    {
+     "w": "With",
+     "s": 4.516,
+     "e": 4.759
+    },
+    {
+     "w": "each",
+     "s": 4.771,
+     "e": 4.967
+    },
+    {
+     "w": "beat",
+     "s": 4.979,
+     "e": 5.222
+    },
+    {
+     "w": "it",
+     "s": 5.454,
+     "e": 5.535
+    },
+    {
+     "w": "pushes",
+     "s": 5.546,
+     "e": 5.859
+    },
+    {
+     "w": "about",
+     "s": 5.87,
+     "e": 6.09
+    },
+    {
+     "w": "seventy",
+     "s": 6.102,
+     "e": 6.495
+    },
+    {
+     "w": "milliliters",
+     "s": 6.507,
+     "e": 7.051
+    },
+    {
+     "w": "of",
+     "s": 7.062,
+     "e": 7.167
+    },
+    {
+     "w": "blood",
+     "s": 7.178,
+     "e": 7.421
+    },
+    {
+     "w": "out",
+     "s": 7.433,
+     "e": 7.583
+    },
+    {
+     "w": "into",
+     "s": 7.595,
+     "e": 7.745
+    },
+    {
+     "w": "your",
+     "s": 7.757,
+     "e": 7.849
+    },
+    {
+     "w": "body",
+     "s": 7.861,
+     "e": 8.22
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "text": "Now breathe in.",
+   "start": 8.97,
+   "speechStart": 9.07,
+   "speechEnd": 9.776,
+   "words": [
+    {
+     "w": "Now",
+     "s": 9.07,
+     "e": 9.348
+    },
+    {
+     "w": "breathe",
+     "s": 9.359,
+     "e": 9.625
+    },
+    {
+     "w": "in",
+     "s": 9.637,
+     "e": 9.776
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "text": "Air rushes down your windpipe into two lungs, filled with about three hundred million tiny air sacs.",
+   "start": 10.726,
+   "speechStart": 10.826,
+   "speechEnd": 15.652,
+   "words": [
+    {
+     "w": "Air",
+     "s": 10.826,
+     "e": 11.104
+    },
+    {
+     "w": "rushes",
+     "s": 11.115,
+     "e": 11.404
+    },
+    {
+     "w": "down",
+     "s": 11.416,
+     "e": 11.636
+    },
+    {
+     "w": "your",
+     "s": 11.648,
+     "e": 11.763
+    },
+    {
+     "w": "windpipe",
+     "s": 11.775,
+     "e": 12.18
+    },
+    {
+     "w": "into",
+     "s": 12.192,
+     "e": 12.319
+    },
+    {
+     "w": "two",
+     "s": 12.33,
+     "e": 12.55
+    },
+    {
+     "w": "lungs",
+     "s": 12.562,
+     "e": 12.967
+    },
+    {
+     "w": "filled",
+     "s": 13.117,
+     "e": 13.303
+    },
+    {
+     "w": "with",
+     "s": 13.314,
+     "e": 13.395
+    },
+    {
+     "w": "about",
+     "s": 13.407,
+     "e": 13.65
+    },
+    {
+     "w": "three",
+     "s": 13.661,
+     "e": 13.939
+    },
+    {
+     "w": "hundred",
+     "s": 13.951,
+     "e": 14.263
+    },
+    {
+     "w": "million",
+     "s": 14.275,
+     "e": 14.587
+    },
+    {
+     "w": "tiny",
+     "s": 14.599,
+     "e": 14.923
+    },
+    {
+     "w": "air",
+     "s": 14.935,
+     "e": 15.073
+    },
+    {
+     "w": "sacs",
+     "s": 15.085,
+     "e": 15.652
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "text": "Those sacs are thinner than a sheet of paper, and that is where oxygen crosses into your blood.",
+   "start": 15.932,
+   "speechStart": 16.032,
+   "speechEnd": 20.268,
+   "words": [
+    {
+     "w": "Those",
+     "s": 16.032,
+     "e": 16.298
+    },
+    {
+     "w": "sacs",
+     "s": 16.31,
+     "e": 16.657
+    },
+    {
+     "w": "are",
+     "s": 16.669,
+     "e": 16.761
+    },
+    {
+     "w": "thinner",
+     "s": 16.773,
+     "e": 17.062
+    },
+    {
+     "w": "than",
+     "s": 17.074,
+     "e": 17.178
+    },
+    {
+     "w": "a",
+     "s": 17.19,
+     "e": 17.224
+    },
+    {
+     "w": "sheet",
+     "s": 17.236,
+     "e": 17.525
+    },
+    {
+     "w": "of",
+     "s": 17.537,
+     "e": 17.618
+    },
+    {
+     "w": "paper",
+     "s": 17.629,
+     "e": 18.058
+    },
+    {
+     "w": "and",
+     "s": 18.347,
+     "e": 18.405
+    },
+    {
+     "w": "that",
+     "s": 18.416,
+     "e": 18.521
+    },
+    {
+     "w": "is",
+     "s": 18.532,
+     "e": 18.602
+    },
+    {
+     "w": "where",
+     "s": 18.613,
+     "e": 18.74
+    },
+    {
+     "w": "oxygen",
+     "s": 18.752,
+     "e": 19.18
+    },
+    {
+     "w": "crosses",
+     "s": 19.192,
+     "e": 19.666
+    },
+    {
+     "w": "into",
+     "s": 19.678,
+     "e": 19.817
+    },
+    {
+     "w": "your",
+     "s": 19.828,
+     "e": 19.944
+    },
+    {
+     "w": "blood",
+     "s": 19.956,
+     "e": 20.268
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "text": "Send the signal.",
+   "start": 21.018,
+   "speechStart": 21.118,
+   "speechEnd": 21.882,
+   "words": [
+    {
+     "w": "Send",
+     "s": 21.118,
+     "e": 21.408
+    },
+    {
+     "w": "the",
+     "s": 21.419,
+     "e": 21.465
+    },
+    {
+     "w": "signal",
+     "s": 21.477,
+     "e": 21.882
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "text": "Your brain sends electrical messages along nerves at over a hundred meters per second.",
+   "start": 22.832,
+   "speechStart": 22.932,
+   "speechEnd": 27.168,
+   "words": [
+    {
+     "w": "Your",
+     "s": 22.932,
+     "e": 23.152
+    },
+    {
+     "w": "brain",
+     "s": 23.164,
+     "e": 23.465
+    },
+    {
+     "w": "sends",
+     "s": 23.476,
+     "e": 23.719
+    },
+    {
+     "w": "electrical",
+     "s": 23.731,
+     "e": 24.205
+    },
+    {
+     "w": "messages",
+     "s": 24.217,
+     "e": 24.703
+    },
+    {
+     "w": "along",
+     "s": 24.726,
+     "e": 25.097
+    },
+    {
+     "w": "nerves",
+     "s": 25.108,
+     "e": 25.386
+    },
+    {
+     "w": "at",
+     "s": 25.397,
+     "e": 25.478
+    },
+    {
+     "w": "over",
+     "s": 25.502,
+     "e": 25.779
+    },
+    {
+     "w": "a",
+     "s": 25.791,
+     "e": 25.837
+    },
+    {
+     "w": "hundred",
+     "s": 25.849,
+     "e": 26.231
+    },
+    {
+     "w": "meters",
+     "s": 26.242,
+     "e": 26.578
+    },
+    {
+     "w": "per",
+     "s": 26.59,
+     "e": 26.728
+    },
+    {
+     "w": "second",
+     "s": 26.74,
+     "e": 27.168
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "text": "A single thought can reach your toes before you finish blinking.",
+   "start": 27.448,
+   "speechStart": 27.548,
+   "speechEnd": 30.21,
+   "words": [
+    {
+     "w": "A",
+     "s": 27.548,
+     "e": 27.699
+    },
+    {
+     "w": "single",
+     "s": 27.71,
+     "e": 28.046
+    },
+    {
+     "w": "thought",
+     "s": 28.058,
+     "e": 28.289
+    },
+    {
+     "w": "can",
+     "s": 28.301,
+     "e": 28.451
+    },
+    {
+     "w": "reach",
+     "s": 28.463,
+     "e": 28.648
+    },
+    {
+     "w": "your",
+     "s": 28.659,
+     "e": 28.752
+    },
+    {
+     "w": "toes",
+     "s": 28.764,
+     "e": 29.099
+    },
+    {
+     "w": "before",
+     "s": 29.111,
+     "e": 29.423
+    },
+    {
+     "w": "you",
+     "s": 29.435,
+     "e": 29.527
+    },
+    {
+     "w": "finish",
+     "s": 29.539,
+     "e": 29.794
+    },
+    {
+     "w": "blinking",
+     "s": 29.805,
+     "e": 30.21
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "text": "Now move your hand.",
+   "start": 30.96,
+   "speechStart": 31.06,
+   "speechEnd": 31.952,
+   "words": [
+    {
+     "w": "Now",
+     "s": 31.06,
+     "e": 31.257
+    },
+    {
+     "w": "move",
+     "s": 31.269,
+     "e": 31.431
+    },
+    {
+     "w": "your",
+     "s": 31.442,
+     "e": 31.535
+    },
+    {
+     "w": "hand",
+     "s": 31.546,
+     "e": 31.952
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "text": "Muscles pull on bones through tendons, and each muscle can only pull, never push.",
+   "start": 32.902,
+   "speechStart": 33.002,
+   "speechEnd": 37.168,
+   "words": [
+    {
+     "w": "Muscles",
+     "s": 33.002,
+     "e": 33.43
+    },
+    {
+     "w": "pull",
+     "s": 33.441,
+     "e": 33.673
+    },
+    {
+     "w": "on",
+     "s": 33.684,
+     "e": 33.789
+    },
+    {
+     "w": "bones",
+     "s": 33.8,
+     "e": 34.147
+    },
+    {
+     "w": "through",
+     "s": 34.159,
+     "e": 34.286
+    },
+    {
+     "w": "tendons",
+     "s": 34.298,
+     "e": 34.795
+    },
+    {
+     "w": "and",
+     "s": 34.958,
+     "e": 35.073
+    },
+    {
+     "w": "each",
+     "s": 35.085,
+     "e": 35.247
+    },
+    {
+     "w": "muscle",
+     "s": 35.258,
+     "e": 35.548
+    },
+    {
+     "w": "can",
+     "s": 35.559,
+     "e": 35.687
+    },
+    {
+     "w": "only",
+     "s": 35.698,
+     "e": 35.918
+    },
+    {
+     "w": "pull",
+     "s": 35.93,
+     "e": 36.265
+    },
+    {
+     "w": "never",
+     "s": 36.578,
+     "e": 36.763
+    },
+    {
+     "w": "push",
+     "s": 36.775,
+     "e": 37.168
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "text": "Your arm works with pairs of muscles, one pulls while the other relaxes.",
+   "start": 37.448,
+   "speechStart": 37.548,
+   "speechEnd": 40.963,
+   "words": [
+    {
+     "w": "Your",
+     "s": 37.548,
+     "e": 37.768
+    },
+    {
+     "w": "arm",
+     "s": 37.78,
+     "e": 37.976
+    },
+    {
+     "w": "works",
+     "s": 37.988,
+     "e": 38.231
+    },
+    {
+     "w": "with",
+     "s": 38.243,
+     "e": 38.358
+    },
+    {
+     "w": "pairs",
+     "s": 38.37,
+     "e": 38.648
+    },
+    {
+     "w": "of",
+     "s": 38.659,
+     "e": 38.729
+    },
+    {
+     "w": "muscles",
+     "s": 38.74,
+     "e": 39.203
+    },
+    {
+     "w": "one",
+     "s": 39.354,
+     "e": 39.55
+    },
+    {
+     "w": "pulls",
+     "s": 39.562,
+     "e": 39.851
+    },
+    {
+     "w": "while",
+     "s": 39.863,
+     "e": 39.979
+    },
+    {
+     "w": "the",
+     "s": 39.99,
+     "e": 40.083
+    },
+    {
+     "w": "other",
+     "s": 40.094,
+     "e": 40.326
+    },
+    {
+     "w": "relaxes",
+     "s": 40.338,
+     "e": 40.963
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "text": "Fuel the machine.",
+   "start": 41.713,
+   "speechStart": 41.813,
+   "speechEnd": 42.553,
+   "words": [
+    {
+     "w": "Fuel",
+     "s": 41.813,
+     "e": 42.102
+    },
+    {
+     "w": "the",
+     "s": 42.113,
+     "e": 42.183
+    },
+    {
+     "w": "machine",
+     "s": 42.194,
+     "e": 42.553
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "text": "Food gets broken down in your gut into sugar, which every cell burns to make energy.",
+   "start": 43.503,
+   "speechStart": 43.603,
+   "speechEnd": 47.446,
+   "words": [
+    {
+     "w": "Food",
+     "s": 43.603,
+     "e": 43.869
+    },
+    {
+     "w": "gets",
+     "s": 43.881,
+     "e": 44.043
+    },
+    {
+     "w": "broken",
+     "s": 44.055,
+     "e": 44.413
+    },
+    {
+     "w": "down",
+     "s": 44.425,
+     "e": 44.633
+    },
+    {
+     "w": "in",
+     "s": 44.645,
+     "e": 44.714
+    },
+    {
+     "w": "your",
+     "s": 44.726,
+     "e": 44.819
+    },
+    {
+     "w": "gut",
+     "s": 44.83,
+     "e": 45.004
+    },
+    {
+     "w": "into",
+     "s": 45.015,
+     "e": 45.154
+    },
+    {
+     "w": "sugar",
+     "s": 45.166,
+     "e": 45.536
+    },
+    {
+     "w": "which",
+     "s": 45.791,
+     "e": 45.93
+    },
+    {
+     "w": "every",
+     "s": 45.988,
+     "e": 46.196
+    },
+    {
+     "w": "cell",
+     "s": 46.207,
+     "e": 46.462
+    },
+    {
+     "w": "burns",
+     "s": 46.474,
+     "e": 46.775
+    },
+    {
+     "w": "to",
+     "s": 46.786,
+     "e": 46.856
+    },
+    {
+     "w": "make",
+     "s": 46.867,
+     "e": 47.064
+    },
+    {
+     "w": "energy",
+     "s": 47.087,
+     "e": 47.446
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "text": "Your body uses about two thousand calories a day, just to keep running.",
+   "start": 47.726,
+   "speechStart": 47.826,
+   "speechEnd": 51.252,
+   "words": [
+    {
+     "w": "Your",
+     "s": 47.826,
+     "e": 48.023
+    },
+    {
+     "w": "body",
+     "s": 48.034,
+     "e": 48.289
+    },
+    {
+     "w": "uses",
+     "s": 48.3,
+     "e": 48.59
+    },
+    {
+     "w": "about",
+     "s": 48.601,
+     "e": 48.833
+    },
+    {
+     "w": "two",
+     "s": 48.844,
+     "e": 49.053
+    },
+    {
+     "w": "thousand",
+     "s": 49.064,
+     "e": 49.411
+    },
+    {
+     "w": "calories",
+     "s": 49.423,
+     "e": 49.863
+    },
+    {
+     "w": "a",
+     "s": 49.874,
+     "e": 49.932
+    },
+    {
+     "w": "day",
+     "s": 49.944,
+     "e": 50.268
+    },
+    {
+     "w": "just",
+     "s": 50.511,
+     "e": 50.673
+    },
+    {
+     "w": "to",
+     "s": 50.685,
+     "e": 50.743
+    },
+    {
+     "w": "keep",
+     "s": 50.754,
+     "e": 50.951
+    },
+    {
+     "w": "running",
+     "s": 50.962,
+     "e": 51.252
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "text": "Clean up.",
+   "start": 52.002,
+   "speechStart": 52.102,
+   "speechEnd": 52.611,
+   "words": [
+    {
+     "w": "Clean",
+     "s": 52.102,
+     "e": 52.437
+    },
+    {
+     "w": "up",
+     "s": 52.449,
+     "e": 52.611
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "text": "Your kidneys filter around one hundred eighty liters of blood every day.",
+   "start": 53.561,
+   "speechStart": 53.661,
+   "speechEnd": 56.728,
+   "words": [
+    {
+     "w": "Your",
+     "s": 53.661,
+     "e": 53.869
+    },
+    {
+     "w": "kidneys",
+     "s": 53.881,
+     "e": 54.217
+    },
+    {
+     "w": "filter",
+     "s": 54.228,
+     "e": 54.552
+    },
+    {
+     "w": "around",
+     "s": 54.564,
+     "e": 54.795
+    },
+    {
+     "w": "one",
+     "s": 54.807,
+     "e": 54.923
+    },
+    {
+     "w": "hundred",
+     "s": 54.934,
+     "e": 55.224
+    },
+    {
+     "w": "eighty",
+     "s": 55.235,
+     "e": 55.432
+    },
+    {
+     "w": "liters",
+     "s": 55.443,
+     "e": 55.814
+    },
+    {
+     "w": "of",
+     "s": 55.825,
+     "e": 55.918
+    },
+    {
+     "w": "blood",
+     "s": 55.93,
+     "e": 56.242
+    },
+    {
+     "w": "every",
+     "s": 56.254,
+     "e": 56.474
+    },
+    {
+     "w": "day",
+     "s": 56.485,
+     "e": 56.728
+    }
+   ]
+  },
+  {
+   "i": 17,
+   "text": "Most of that is cleaned and sent back, and the rest leaves as urine.",
+   "start": 57.008,
+   "speechStart": 57.108,
+   "speechEnd": 60.21,
+   "words": [
+    {
+     "w": "Most",
+     "s": 57.108,
+     "e": 57.409
+    },
+    {
+     "w": "of",
+     "s": 57.421,
+     "e": 57.479
+    },
+    {
+     "w": "that",
+     "s": 57.49,
+     "e": 57.606
+    },
+    {
+     "w": "is",
+     "s": 57.617,
+     "e": 57.71
+    },
+    {
+     "w": "cleaned",
+     "s": 57.722,
+     "e": 58.057
+    },
+    {
+     "w": "and",
+     "s": 58.069,
+     "e": 58.173
+    },
+    {
+     "w": "sent",
+     "s": 58.185,
+     "e": 58.462
+    },
+    {
+     "w": "back",
+     "s": 58.474,
+     "e": 58.786
+    },
+    {
+     "w": "and",
+     "s": 59.122,
+     "e": 59.168
+    },
+    {
+     "w": "the",
+     "s": 59.18,
+     "e": 59.238
+    },
+    {
+     "w": "rest",
+     "s": 59.249,
+     "e": 59.516
+    },
+    {
+     "w": "leaves",
+     "s": 59.527,
+     "e": 59.735
+    },
+    {
+     "w": "as",
+     "s": 59.747,
+     "e": 59.863
+    },
+    {
+     "w": "urine",
+     "s": 59.874,
+     "e": 60.21
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "text": "From a single heartbeat to a whole body working. So go ahead and...",
+   "start": 60.49,
+   "speechStart": 60.59,
+   "speechEnd": 64.024,
+   "words": [
+    {
+     "w": "From",
+     "s": 60.59,
+     "e": 60.81
+    },
+    {
+     "w": "a",
+     "s": 60.822,
+     "e": 60.879
+    },
+    {
+     "w": "single",
+     "s": 60.891,
+     "e": 61.227
+    },
+    {
+     "w": "heartbeat",
+     "s": 61.238,
+     "e": 61.655
+    },
+    {
+     "w": "to",
+     "s": 61.666,
+     "e": 61.794
+    },
+    {
+     "w": "a",
+     "s": 61.805,
+     "e": 61.886
+    },
+    {
+     "w": "whole",
+     "s": 61.898,
+     "e": 62.164
+    },
+    {
+     "w": "body",
+     "s": 62.176,
+     "e": 62.465
+    },
+    {
+     "w": "working",
+     "s": 62.477,
+     "e": 62.847
+    },
+    {
+     "w": "So",
+     "s": 63.179,
+     "e": 63.41
+    },
+    {
+     "w": "go",
+     "s": 63.422,
+     "e": 63.561
+    },
+    {
+     "w": "ahead",
+     "s": 63.572,
+     "e": 63.839
+    },
+    {
+     "w": "and",
+     "s": 63.85,
+     "e": 64.024
+    }
+   ]
+  }
+ ],
+ "subs": [
+  {
+   "text": "Feel your heartbeat.",
+   "s": 0.1,
+   "e": 1.522
+  },
+  {
+   "text": "Your heart beats",
+   "s": 1.972,
+   "e": 2.62
+  },
+  {
+   "text": "about a hundred thousand",
+   "s": 2.62,
+   "e": 3.546
+  },
+  {
+   "text": "times a day.",
+   "s": 3.546,
+   "e": 4.516
+  },
+  {
+   "text": "With each beat,",
+   "s": 4.516,
+   "e": 5.454
+  },
+  {
+   "text": "it pushes about",
+   "s": 5.454,
+   "e": 6.102
+  },
+  {
+   "text": "seventy milliliters",
+   "s": 6.102,
+   "e": 7.062
+  },
+  {
+   "text": "of blood out",
+   "s": 7.062,
+   "e": 7.595
+  },
+  {
+   "text": "into your body.",
+   "s": 7.595,
+   "e": 8.82
+  },
+  {
+   "text": "Now breathe in.",
+   "s": 9.07,
+   "e": 10.376
+  },
+  {
+   "text": "Air rushes down",
+   "s": 10.826,
+   "e": 11.648
+  },
+  {
+   "text": "your windpipe",
+   "s": 11.648,
+   "e": 12.192
+  },
+  {
+   "text": "into two lungs,",
+   "s": 12.192,
+   "e": 13.117
+  },
+  {
+   "text": "filled with about",
+   "s": 13.117,
+   "e": 13.661
+  },
+  {
+   "text": "three hundred million",
+   "s": 13.661,
+   "e": 14.599
+  },
+  {
+   "text": "tiny air sacs.",
+   "s": 14.599,
+   "e": 16.032
+  },
+  {
+   "text": "Those sacs are thinner",
+   "s": 16.032,
+   "e": 17.074
+  },
+  {
+   "text": "than a sheet of paper,",
+   "s": 17.074,
+   "e": 18.347
+  },
+  {
+   "text": "and that is where",
+   "s": 18.347,
+   "e": 18.752
+  },
+  {
+   "text": "oxygen crosses",
+   "s": 18.752,
+   "e": 19.678
+  },
+  {
+   "text": "into your blood.",
+   "s": 19.678,
+   "e": 20.868
+  },
+  {
+   "text": "Send the signal.",
+   "s": 21.118,
+   "e": 22.482
+  },
+  {
+   "text": "Your brain sends",
+   "s": 22.932,
+   "e": 23.731
+  },
+  {
+   "text": "electrical messages",
+   "s": 23.731,
+   "e": 24.726
+  },
+  {
+   "text": "along nerves",
+   "s": 24.726,
+   "e": 25.397
+  },
+  {
+   "text": "at over a hundred",
+   "s": 25.397,
+   "e": 26.242
+  },
+  {
+   "text": "meters per second.",
+   "s": 26.242,
+   "e": 27.548
+  },
+  {
+   "text": "A single thought can reach",
+   "s": 27.548,
+   "e": 28.659
+  },
+  {
+   "text": "your toes",
+   "s": 28.659,
+   "e": 29.111
+  },
+  {
+   "text": "before you finish blinking.",
+   "s": 29.111,
+   "e": 30.81
+  },
+  {
+   "text": "Now move your hand.",
+   "s": 31.06,
+   "e": 32.552
+  },
+  {
+   "text": "Muscles pull on bones",
+   "s": 33.002,
+   "e": 34.159
+  },
+  {
+   "text": "through tendons,",
+   "s": 34.159,
+   "e": 34.958
+  },
+  {
+   "text": "and each muscle",
+   "s": 34.958,
+   "e": 35.559
+  },
+  {
+   "text": "can only pull,",
+   "s": 35.559,
+   "e": 36.578
+  },
+  {
+   "text": "never push.",
+   "s": 36.578,
+   "e": 37.548
+  },
+  {
+   "text": "Your arm works",
+   "s": 37.548,
+   "e": 38.243
+  },
+  {
+   "text": "with pairs of muscles,",
+   "s": 38.243,
+   "e": 39.354
+  },
+  {
+   "text": "one pulls while",
+   "s": 39.354,
+   "e": 39.99
+  },
+  {
+   "text": "the other relaxes.",
+   "s": 39.99,
+   "e": 41.563
+  },
+  {
+   "text": "Fuel the machine.",
+   "s": 41.813,
+   "e": 43.153
+  },
+  {
+   "text": "Food gets broken down",
+   "s": 43.603,
+   "e": 44.645
+  },
+  {
+   "text": "in your gut",
+   "s": 44.645,
+   "e": 45.015
+  },
+  {
+   "text": "into sugar,",
+   "s": 45.015,
+   "e": 45.791
+  },
+  {
+   "text": "which every cell",
+   "s": 45.791,
+   "e": 46.474
+  },
+  {
+   "text": "burns to make energy.",
+   "s": 46.474,
+   "e": 47.826
+  },
+  {
+   "text": "Your body uses about",
+   "s": 47.826,
+   "e": 48.844
+  },
+  {
+   "text": "two thousand calories",
+   "s": 48.844,
+   "e": 49.874
+  },
+  {
+   "text": "a day,",
+   "s": 49.874,
+   "e": 50.511
+  },
+  {
+   "text": "just to keep running.",
+   "s": 50.511,
+   "e": 51.852
+  },
+  {
+   "text": "Clean up.",
+   "s": 52.102,
+   "e": 53.211
+  },
+  {
+   "text": "Your kidneys filter",
+   "s": 53.661,
+   "e": 54.564
+  },
+  {
+   "text": "around one hundred",
+   "s": 54.564,
+   "e": 55.235
+  },
+  {
+   "text": "eighty liters",
+   "s": 55.235,
+   "e": 55.825
+  },
+  {
+   "text": "of blood every day.",
+   "s": 55.825,
+   "e": 57.108
+  },
+  {
+   "text": "Most of that is cleaned",
+   "s": 57.108,
+   "e": 58.069
+  },
+  {
+   "text": "and sent back,",
+   "s": 58.069,
+   "e": 59.122
+  },
+  {
+   "text": "and the rest",
+   "s": 59.122,
+   "e": 59.527
+  },
+  {
+   "text": "leaves as urine.",
+   "s": 59.527,
+   "e": 60.59
+  },
+  {
+   "text": "From a single heartbeat",
+   "s": 60.59,
+   "e": 61.666
+  },
+  {
+   "text": "to a whole body",
+   "s": 61.666,
+   "e": 62.477
+  },
+  {
+   "text": "working.",
+   "s": 62.477,
+   "e": 63.179
+  },
+  {
+   "text": "So go ahead and...",
+   "s": 63.179,
+   "e": 64.144
+  }
+ ]
+}
