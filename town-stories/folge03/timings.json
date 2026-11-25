@@ -1,0 +1,125 @@
+{
+ "lines": [
+  {
+   "text": "You decided. I ran home. Faster than ever. In bunny slippers.",
+   "file": "folge03/audio_clone/l00.wav",
+   "dur": 4.328563,
+   "start": 0.3
+  },
+  {
+   "text": "Through the forest. The owl yelled: Whooo is running?",
+   "file": "folge03/audio_clone/l01.wav",
+   "dur": 3.175771,
+   "start": 5.008563
+  },
+  {
+   "text": "Behind me. Crunch. Crunch. Crunch. The glowing footsteps were following me.",
+   "file": "folge03/audio_clone/l02.wav",
+   "dur": 4.991,
+   "start": 8.564333999999999
+  },
+  {
+   "text": "Then I saw my house. All the lights were on.",
+   "file": "folge03/audio_clone/l03.wav",
+   "dur": 2.60575,
+   "start": 13.935333999999997
+  },
+  {
+   "text": "Wait. I turned them off before I left.",
+   "file": "folge03/audio_clone/l04.wav",
+   "dur": 2.001604,
+   "start": 16.921083999999997
+  },
+  {
+   "text": "I opened the front door. Very, very quietly.",
+   "file": "folge03/audio_clone/l05.wav",
+   "dur": 2.832354,
+   "start": 19.302687999999996
+  },
+  {
+   "text": "The kitchen smelled like pancakes. At four in the morning.",
+   "file": "folge03/audio_clone/l06.wav",
+   "dur": 2.659146,
+   "start": 22.515041999999998
+  },
+  {
+   "text": "And someone was sitting at our table. Eating my cereal.",
+   "file": "folge03/audio_clone/l07.wav",
+   "dur": 2.553563,
+   "start": 25.554187999999996
+  },
+  {
+   "text": "Yellow hoodie. Brown hair. Bunny slippers.",
+   "file": "folge03/audio_clone/l08.wav",
+   "dur": 2.831625,
+   "start": 28.487750999999996
+  },
+  {
+   "text": "It was me. Another me.",
+   "file": "folge03/audio_clone/l09.wav",
+   "dur": 1.915125,
+   "start": 31.699375999999994
+  },
+  {
+   "text": "He looked up and said: Finally. You are late.",
+   "file": "folge03/audio_clone/l10.wav",
+   "dur": 2.952354,
+   "start": 33.99450099999999
+  },
+  {
+   "text": "I screamed. He screamed. The cat screamed. We don't even have a cat.",
+   "file": "folge03/audio_clone/l11.wav",
+   "dur": 4.291313,
+   "start": 37.326854999999995
+  },
+  {
+   "text": "Then the other me held up a letter. Number three.",
+   "file": "folge03/audio_clone/l12.wav",
+   "dur": 2.58725,
+   "start": 41.99816799999999
+  },
+  {
+   "text": "He whispered: If you read this, you can never go back.",
+   "file": "folge03/audio_clone/l13.wav",
+   "dur": 2.973021,
+   "start": 44.96541799999999
+  },
+  {
+   "text": "Outside, the footsteps stopped. Right in front of our door.",
+   "file": "folge03/audio_clone/l14.wav",
+   "dur": 3.362417,
+   "start": 48.31843899999999
+  },
+  {
+   "text": "Knock. Knock. Knock.",
+   "file": "folge03/audio_clone/l15.wav",
+   "dur": 1.581833,
+   "start": 52.060855999999994
+  },
+  {
+   "text": "Option one. Read letter number three.",
+   "file": "folge03/audio_clone/l16.wav",
+   "dur": 2.157729,
+   "start": 54.02268899999999
+  },
+  {
+   "text": "Option two. Open the front door.",
+   "file": "folge03/audio_clone/l17.wav",
+   "dur": 2.335583,
+   "start": 56.56041799999999
+  },
+  {
+   "text": "Option three. Hide under the table. With me.",
+   "file": "folge03/audio_clone/l18.wav",
+   "dur": 2.911354,
+   "start": 59.276000999999994
+  },
+  {
+   "text": "Comment one, two, or three. Quick. They are knocking again!",
+   "file": "folge03/audio_clone/l19.wav",
+   "dur": 3.960625,
+   "start": 62.56735499999999
+  }
+ ],
+ "total": 69.90798
+}

@@ -109,7 +109,8 @@ def kitchen(lights=True, door_glow=False):
             box(f'tl{sx}{sy}', (0.12, 0.12, 1.25), (1.1 * sx, 1.0 + 0.6 * sy, 0.62), mat('#8A5A3C'), bevel=0)
     for k, (x, y) in enumerate(((0, 2.2), (0, -0.2))):
         box(f'chair{k}', (0.9, 0.9, 0.1), (x, y, 0.8), mat('#E25D5D'))
-        box(f'chairb{k}', (0.9, 0.1, 1.0), (x, y + (0.45 if k == 0 else -0.45), 1.3), mat('#E25D5D'))
+        if k == 0:
+            box(f'chairb{k}', (0.9, 0.1, 1.0), (x, y + 0.45, 1.3), mat('#E25D5D'))
     # pancakes + cereal
     pm, bm = mat('#E9B565', rough=0.6), mat('#FFF07A', rough=0.3)
     for i in range(6):
@@ -173,8 +174,8 @@ def s_owl_yell(N):
     pip.root.keyframe_insert('rotation_euler', frame=1)
     point((-1.5, 1.2, 4.2), 120, (0.7, 0.8, 1.0), 'moonfill')
     cam = camera(lens=32)
-    cam_key(cam, 1, (-0.6, -1.5, 3.4), (-0.5, 5, 2.8))
-    cam_key(cam, N, (0.2, -1.2, 3.2), (1.0, 5, 2.4))
+    cam_key(cam, 1, (-1.2, -2.6, 3.2), (-1.3, 3, 3.5))
+    cam_key(cam, N, (-0.6, -2.4, 3.0), (-0.6, 3, 3.0))
 
 
 def s_chase(N):
@@ -187,8 +188,9 @@ def s_chase(N):
     pip.root.keyframe_insert('rotation_euler', frame=1)
     point((0, 14, 0.6), 120, (0.36, 0.95, 1.0), 'chl')
     cam = camera(lens=26)
-    cam_key(cam, 1, (1.6, 18, 1.2), (0, 6, 0.8))
-    cam_key(cam, N, (1.4, 12, 1.4), (0, 0, 0.8))
+    cam_key(cam, 1, (1.0, 11.0, 1.5), (0, 5, 0.9))
+    cam_key(cam, N, (1.0, 3.5, 1.5), (0, -2, 0.9))
+    point((0, 4, 3), 160, (0.6, 0.7, 1.0), 'fill')
 
 
 def s_house_lights(N):
@@ -198,8 +200,8 @@ def s_house_lights(N):
     pip.root.rotation_euler = (0, 0, math.radians(150))
     pip.root.keyframe_insert('rotation_euler', frame=1)
     cam = camera(lens=26)
-    cam_key(cam, 1, (-2.5, -9.5, 2.0), (0, 8.5, 2.6))
-    cam_key(cam, N, (-1.5, -6.0, 1.9), (0, 8.5, 2.8))
+    cam_key(cam, 1, (-2.5, -3.0, 1.8), (0, 8.5, 2.6))
+    cam_key(cam, N, (-1.6, -1.8, 1.8), (0, 8.5, 2.8))
 
 
 def s_wait(N):
@@ -225,11 +227,11 @@ def s_door_open(N):
     door.keyframe_insert('rotation_euler', frame=N)
     door.keyframe_insert('location', frame=N)
     box('doorhole', (0.85, 0.05, 1.55), (0, 6.5, 0.8), mat('#FFD9A0', emit=6), bevel=0)
-    pip = make_pip((0.7, 5.2, 0.18), rot_z=math.pi)
+    pip = make_pip((1.2, 5.6, 0.18), rot_z=math.radians(200))
     pip.hold_front(1, both=False, angle=-1.4)
     cam = camera(lens=30)
-    cam_key(cam, 1, (1.8, 2.2, 1.6), (0, 6.5, 1.3))
-    cam_key(cam, N, (1.2, 3.4, 1.5), (0, 6.5, 1.2))
+    cam_key(cam, 1, (-1.4, 2.0, 1.7), (0.3, 6.5, 1.3))
+    cam_key(cam, N, (-1.0, 3.2, 1.6), (0.3, 6.5, 1.2))
 
 
 def s_kitchen(N):
@@ -268,47 +270,41 @@ def spoon_eat(c, f0, f1):
 
 def s_someone(N):
     kitchen()
-    p2 = make_pip2((0, 2.15, 0.0), rot_z=math.pi)
+    p2 = make_pip2((0, -0.15, 0.0), rot_z=math.pi)
     seat(p2)
     spoon_eat(p2, 1, N)
-    pip = make_pip((-3.6, -1.6, 0), rot_z=math.radians(-120))
-    pip.face(1, 'scared')
-    cam = camera(lens=30)
-    cam_key(cam, 1, (-4.6, -3.0, 2.0), (0, 2.1, 1.8))
-    cam_key(cam, N, (-2.8, -1.2, 2.0), (0, 2.1, 1.9))
+    cam = camera(lens=28)
+    cam_key(cam, 1, (-4.8, -4.4, 2.4), (-0.3, 0.2, 1.7))
+    cam_key(cam, N, (-3.9, -3.6, 2.3), (-0.2, 0.2, 1.8))
 
 
 def s_details(N):
     kitchen()
-    p2 = make_pip2((0, 2.15, 0.0), rot_z=math.pi)
+    p2 = make_pip2((0, -0.15, 0.0), rot_z=math.pi)
     seat(p2)
     spoon_eat(p2, 1, N)
     a, b = int(N * 0.33), int(N * 0.66)
     cam = camera(lens=45)
-    cam_key(cam, 1, (1.6, 3.6, 2.0), (0, 2.15, 1.5))          # hoodie
-    cam_key(cam, a, (1.4, 3.4, 2.4), (0, 2.15, 2.0))          # hair
-    cam_key(cam, a + 4, (1.4, 3.4, 2.6), (0, 2.15, 2.45))
-    cam_key(cam, b, (1.2, 3.0, 2.5), (0, 2.15, 2.45))
-    cam_key(cam, b + 4, (0.9, 0.3, 0.5), (0.0, 1.5, 0.25))    # slippers under the table
-    cam_key(cam, N, (0.7, 0.6, 0.45), (0.0, 1.5, 0.22))
+    cam_key(cam, 1, (0.8, -1.7, 1.8), (0, -0.15, 1.5))         # hoodie
+    cam_key(cam, a, (0.6, -1.4, 1.9), (0, -0.15, 1.6))
+    cam_key(cam, a + 4, (0.6, -1.4, 2.7), (0, -0.15, 2.5))     # hair
+    cam_key(cam, b, (0.5, -1.2, 2.7), (0, -0.15, 2.5))
+    cam_key(cam, b + 4, (1.5, 0.0, 0.95), (0.0, 0.75, 0.8))   # slippers
+    cam_key(cam, N, (1.2, 0.2, 0.9), (0.0, 0.75, 0.8))
 
 
 def s_its_me(N):
     kitchen()
-    p2 = make_pip2((0, 2.15, 0.0), rot_z=math.pi)
+    p2 = make_pip2((0, -0.15, 0.0), rot_z=math.pi)
     seat(p2)
     p2.face(1, 'deadpan')
     p2.root.keyframe_insert('rotation_euler', frame=int(N * 0.15))
-    p2.root.rotation_euler = (0, 0, math.radians(200))
-    p2.root.keyframe_insert('rotation_euler', frame=int(N * 0.3))
-    p2.head.rotation_euler = (0, 0, 0)
-    p2.head.keyframe_insert('rotation_euler', frame=int(N * 0.3))
-    p2.head.rotation_euler = (0, 0, math.radians(-160))
-    p2.head.keyframe_insert('rotation_euler', frame=int(N * 0.45))
-    point((0, -0.5, 2.8), 120, (1, 0.9, 0.8), 'face')
+    p2.root.rotation_euler = (0, 0, math.radians(355))
+    p2.root.keyframe_insert('rotation_euler', frame=int(N * 0.4))
+    point((0, -2.5, 2.8), 140, (1, 0.9, 0.8), 'face')
     cam = camera(lens=40)
-    cam_key(cam, 1, (-0.4, -1.4, 2.4), (0, 2.15, 2.0))
-    cam_key(cam, N, (-0.2, -0.2, 2.3), (0, 2.15, 2.05))
+    cam_key(cam, 1, (-0.3, -3.2, 2.2), (0, -0.15, 2.0))
+    cam_key(cam, N, (-0.15, -2.2, 2.15), (0, -0.15, 2.05))
 
 
 def s_finally(N):
@@ -328,7 +324,7 @@ def s_scream(N):
     kitchen()
     p2 = make_pip2((0.6, 2.15, 0.0))
     seat(p2)
-    pip = make_pip((-1.4, 0.0, 0), rot_z=math.radians(-30))
+    pip = make_pip((-1.2, -0.4, 0), rot_z=math.radians(10))
     for c in (pip, p2):
         c.face(1, 'shock')
         c.arms[0].rotation_euler = (0, 0, -2.6)
@@ -359,7 +355,7 @@ def s_scream(N):
     cam = camera(lens=24)
     for f in range(1, N + 1, 2):
         j = 0.06 if f < N * 0.85 else 0.0
-        cam_key(cam, f, (-0.3 + random.uniform(-j, j), -4.2 + f * 0.01, 2.4 + random.uniform(-j, j)), (0.6, 2.0, 1.9))
+        cam_key(cam, f, (2.4 + random.uniform(-j, j), -3.6 + f * 0.008, 2.4 + random.uniform(-j, j)), (0.0, 1.4, 1.8))
 
 
 def s_letter3(N):
@@ -367,15 +363,18 @@ def s_letter3(N):
     p2 = make_pip2((0, 2.15, 0.0))
     seat(p2)
     p2.face(1, 'deadpan')
-    p2.hold_front(int(N * 0.1), both=False, angle=-2.4)
-    lt = empty('l3', (0, -0.2, -0.85), p2.arms[1])
-    box('l3p', (0.55, 0.04, 0.4), (0, 0, 0), mat('#FFF1CF'), lt, bevel=0)
-    text('l3n', '3', (0, -0.03, 0), 0.3, mat('#1E7A3C'), lt, extrude=0.01)
-    green_light((0, 0.6, 3.2), 60, 'l3g')
+    p2.hold_front(int(N * 0.1), both=False, angle=-2.0)
+    lt = empty('l3', (0.75, 1.3, 1.85))
+    box('l3p', (0.7, 0.04, 0.5), (0, 0, 0), mat('#FFF1CF'), lt, bevel=0)
+    text('l3n', '3', (0, -0.03, 0), 0.38, mat('#1E7A3C'), lt, extrude=0.01)
+    lt.keyframe_insert('location', frame=1)
+    lt.location.z = 2.0
+    lt.keyframe_insert('location', frame=int(N * 0.3))
+    green_light((0.15, 0.3, 2.4), 60, 'l3g')
     point((0, -0.5, 2.8), 140, (1, 0.9, 0.8), 'face')
     cam = camera(lens=40)
-    cam_key(cam, 1, (0.3, -1.6, 2.6), (0, 2.0, 2.5))
-    cam_key(cam, N, (0.2, -0.4, 2.7), (0, 2.0, 2.7))
+    cam_key(cam, 1, (0.3, -1.8, 2.7), (0, 2.0, 2.3))
+    cam_key(cam, N, (0.2, -0.8, 2.7), (0, 2.0, 2.35))
 
 
 def s_never_back(N):
@@ -394,8 +393,8 @@ def s_steps_stop(N):
 
 def s_knock(N):
     door, under = kitchen(door_glow=True)
-    p2 = make_pip2((-1.6, 0.4, 0), rot_z=math.radians(-60))
-    pip = make_pip((-1.0, -0.6, 0), rot_z=math.radians(-70))
+    p2 = make_pip2((-1.4, 0.8, 0), rot_z=math.radians(-60))
+    pip = make_pip((-1.0, -1.6, 0), rot_z=math.radians(-70))
     for c in (pip, p2):
         c.face(1, 'scared')
         c.shake(1, N, 0.06)
@@ -407,8 +406,9 @@ def s_knock(N):
         door.location.x = -5.85
         door.keyframe_insert('location', frame=kf + 3)
     cam = camera(lens=26)
-    cam_key(cam, 1, (1.8, -4.5, 2.4), (-4.5, -1.0, 1.4))
-    cam_key(cam, N, (0.8, -3.6, 2.2), (-4.5, -1.2, 1.4))
+    cam = camera(lens=22)
+    cam_key(cam, 1, (2.6, -4.6, 2.6), (-3.0, -0.8, 1.4))
+    cam_key(cam, N, (2.0, -4.0, 2.4), (-3.0, -0.9, 1.4))
 
 
 def s_opt1(N):
@@ -425,19 +425,20 @@ def s_opt2(N):
 
 def s_opt3(N):
     kitchen()
-    box('tablecloth', (2.8, 1.8, 0.04), (0, 1.0, 1.38), mat('#E8F0FF'), bevel=0)
     for k, (x, rz) in enumerate(((-0.4, 0.3), (0.45, -0.3))):
-        c = (make_pip if k == 0 else make_pip2)((x, 1.0, -0.55), rot_z=rz)
+        c = (make_pip if k == 0 else make_pip2)((x, 1.0, -0.75), rot_z=rz)
         c.face(1, 'scared')
         for l in c.legs:
             l.rotation_euler = (-math.pi / 2, 0, 0)
             l.keyframe_insert('rotation_euler', frame=1)
         c.body.rotation_euler = (0.35, 0, 0)
         c.body.keyframe_insert('rotation_euler', frame=1)
+    for nm in ('chair1',):
+        bpy.data.objects.remove(bpy.data.objects[nm])
     point((0, -1.5, 0.8), 150, (1, 0.85, 0.7), 'under')
     cam = camera(lens=30)
-    cam_key(cam, 1, (0.0, -3.0, 0.7), (0, 1.0, 0.75))
-    cam_key(cam, N, (0.0, -2.2, 0.65), (0, 1.0, 0.75))
+    cam_key(cam, 1, (0.0, -2.8, 0.55), (0, 1.0, 0.65))
+    cam_key(cam, N, (0.0, -2.1, 0.5), (0, 1.0, 0.65))
 
 
 def s_final(N):
