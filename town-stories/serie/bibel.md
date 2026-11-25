@@ -21,6 +21,9 @@ The letter says what will happen tomorrow, and it always comes true.
 - **Bunny slippers**: Pip wears white bunny slippers with ears (from episode 2 on). The glowing footprints have the same shape.
 - **The mysterious footprints**: glow blue (#5CF2FF), bunny shape. Probably "Pip from tomorrow".
 
+- **Pip 2 ("the other me")**: looks exactly like Pip in his yellow hoodie, but wears bunny slippers. Calm, deadpan, eats cereal.
+- **The cat**: grey, blocky. "We don't even have a cat." Running gag.
+
 ## Town
 Small houses in pastel colours, cobblestone street, lanterns, forest at the edge of town, big moon.
 
@@ -28,4 +31,5 @@ Small houses in pastel colours, cobblestone street, lanterns, forest at the edge
 | # | Title | Options | Winner |
 |---|---|---|---|
 | 1 | The town disappears | 1 forest footprints / 2 wake Grandma / 3 write back | **1 forest footprints** |
-| 2 | The footprints in the forest | 1 turn around / 2 run home / 3 open the second letter | open |
+| 2 | The footprints in the forest | 1 turn around / 2 run home / 3 open the second letter | **2 run home** |
+| 3 | Someone is in my kitchen | 1 read letter 3 / 2 open the door / 3 hide under the table | open |
