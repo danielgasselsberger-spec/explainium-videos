@@ -1,0 +1,521 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;background:#000;width:1080px;height:1920px;overflow:hidden}
+  svg{display:block}
+  text{font-family:"Inter Display","Inter",sans-serif;font-weight:900}
+  .emoji{font-family:"Noto Color Emoji"}
+</style></head>
+<body>
+<svg id="stage" xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+<script>
+// ===================== Grundlagen =====================
+const W = 1080, H = 1920, OL = '#1a1a2e';
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const easeOutBack = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+const rnd = (seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647)(42);
+const STARS = Array.from({length: 70}, () => [rnd() * W, rnd() * 1000, 1 + rnd() * 2.5, rnd() * 6]);
+function mixHex(a, b, t) {
+  const pa = [1,3,5].map(i => parseInt(a.substr(i,2),16)), pb = [1,3,5].map(i => parseInt(b.substr(i,2),16));
+  return '#' + pa.map((v,i) => Math.round(lerp(v,pb[i],t)).toString(16).padStart(2,'0')).join('');
+}
+
+const DEFS = `
+<defs>
+  <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="bigglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="22"/></filter>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+  <radialGradient id="vign" cx="50%" cy="50%" r="75%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".65"/></radialGradient>
+  <radialGradient id="lampglow"><stop offset="0%" stop-color="#fff6b0" stop-opacity=".95"/><stop offset="100%" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+  <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff6b0" stop-opacity=".85"/><stop offset="100%" stop-color="#fff6b0" stop-opacity="0"/></linearGradient>
+  <linearGradient id="beamV" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff6b0" stop-opacity=".55"/><stop offset="100%" stop-color="#fff6b0" stop-opacity="0"/></linearGradient>
+  <radialGradient id="spot" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#fff3c4" stop-opacity=".55"/><stop offset="100%" stop-color="#fff3c4" stop-opacity="0"/></radialGradient>
+  <linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1b2a55"/><stop offset="100%" stop-color="#0a1230"/></linearGradient>
+</defs>`;
+
+// ===================== Figur: der Junge =====================
+// Ursprung = zwischen den Füßen. Höhe ≈ 520 bei s=1.
+function boy({x, y, s = 1, expr = 'neutral', lamp = true, shake = 0, t = 0, pose = 'down', look = 0}) {
+  const sx = shake ? Math.sin(t * 70) * shake : 0;
+  const bob = Math.sin(t * 3) * 3;
+  // Arme
+  let arms;
+  const arm = (d) => `<path d="${d}" fill="none" stroke="${OL}" stroke-width="40" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#ffd23f" stroke-width="28" stroke-linecap="round"/>`;
+  const hand = (hx, hy) => `<circle cx="${hx}" cy="${hy}" r="22" fill="#ffd9b8" stroke="${OL}" stroke-width="6"/>`;
+  if (pose === 'scared') {
+    arms = arm('M-78,-195 Q-130,-170 -105,-255') + arm('M78,-195 Q130,-170 105,-255') + hand(-105,-262) + hand(105,-262);
+  } else if (pose === 'point') {
+    arms = arm('M-78,-195 Q-110,-140 -100,-95') + hand(-100,-90) + arm('M78,-195 Q150,-210 200,-250') + hand(205,-255);
+  } else if (pose === 'cheer') {
+    arms = arm('M-78,-195 Q-140,-230 -150,-300') + arm('M78,-195 Q140,-230 150,-300') + hand(-152,-306) + hand(152,-306);
+  } else {
+    arms = arm('M-78,-195 Q-110,-140 -100,-95') + arm('M78,-195 Q110,-140 100,-95') + hand(-100,-90) + hand(100,-90);
+  }
+  // Gesicht
+  const ey = -330, ex = 55;
+  let eyes, brows, mouth, extra = '';
+  const eyeN = (cx) => `<ellipse cx="${cx}" cy="${ey}" rx="26" ry="34" fill="${OL}"/><circle cx="${cx+8}" cy="${ey-12}" r="10" fill="#fff"/><circle cx="${cx-8}" cy="${ey+12}" r="5" fill="#fff"/>`;
+  const eyeW = (cx) => `<ellipse cx="${cx}" cy="${ey}" rx="30" ry="38" fill="#fff" stroke="${OL}" stroke-width="6"/><circle cx="${cx+look*8}" cy="${ey+2}" r="11" fill="${OL}"/>`;
+  switch (expr) {
+    case 'sad':
+      eyes = eyeN(-ex) + eyeN(ex);
+      brows = `<path d="M-85,-390 L-30,-405" stroke="${OL}" stroke-width="9" stroke-linecap="round"/><path d="M85,-390 L30,-405" stroke="${OL}" stroke-width="9" stroke-linecap="round"/>`;
+      mouth = `<path d="M-22,-262 Q0,-280 22,-262" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+      break;
+    case 'scared':
+      eyes = eyeW(-ex) + eyeW(ex);
+      brows = `<path d="M-90,-400 Q-55,-425 -25,-408" fill="none" stroke="${OL}" stroke-width="9" stroke-linecap="round"/><path d="M90,-400 Q55,-425 25,-408" fill="none" stroke="${OL}" stroke-width="9" stroke-linecap="round"/>`;
+      mouth = `<ellipse cx="0" cy="-262" rx="20" ry="26" fill="#7a2230" stroke="${OL}" stroke-width="7"/>`;
+      extra = `<path d="M125,-410 q14,26 0,40 q-14,-14 0,-40z" fill="#9fe3ff" stroke="${OL}" stroke-width="5"/>`;
+      break;
+    case 'determined':
+      eyes = eyeN(-ex) + eyeN(ex);
+      brows = `<path d="M-88,-405 L-28,-385" stroke="${OL}" stroke-width="11" stroke-linecap="round"/><path d="M88,-405 L28,-385" stroke="${OL}" stroke-width="11" stroke-linecap="round"/>`;
+      mouth = `<path d="M-24,-265 Q4,-258 26,-272" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+      break;
+    case 'happy':
+      eyes = `<path d="M-80,-325 Q-55,-360 -30,-325" fill="none" stroke="${OL}" stroke-width="10" stroke-linecap="round"/><path d="M80,-325 Q55,-360 30,-325" fill="none" stroke="${OL}" stroke-width="10" stroke-linecap="round"/>`;
+      brows = `<path d="M-82,-395 Q-55,-410 -30,-398" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/><path d="M82,-395 Q55,-410 30,-398" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+      mouth = `<path d="M-32,-275 Q0,-232 32,-275 Z" fill="#7a2230" stroke="${OL}" stroke-width="7" stroke-linejoin="round"/>`;
+      break;
+    case 'hopeful':
+      eyes = eyeN(-ex) + eyeN(ex);
+      brows = `<path d="M-85,-398 Q-55,-412 -28,-402" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/><path d="M85,-398 Q55,-412 28,-402" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+      mouth = `<path d="M-26,-272 Q0,-245 26,-272" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+      break;
+    default:
+      eyes = eyeN(-ex) + eyeN(ex);
+      brows = `<path d="M-82,-398 L-30,-400" stroke="${OL}" stroke-width="8" stroke-linecap="round"/><path d="M82,-398 L30,-400" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+      mouth = `<path d="M-18,-266 Q0,-256 18,-266" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round"/>`;
+  }
+  const lampLight = lamp ? `
+    <circle cx="0" cy="-455" r="70" fill="url(#lampglow)"/>
+    <circle cx="0" cy="-455" r="15" fill="#fff27a" filter="url(#glow)"/>` : `<circle cx="0" cy="-455" r="15" fill="#8a8a7a"/>`;
+  return `<g transform="translate(${x + sx},${y}) scale(${s})">
+    <ellipse cx="0" cy="4" rx="120" ry="18" fill="#000" opacity=".35"/>
+    <g transform="translate(0,${bob * 0.3})">
+    <!-- Stiefel -->
+    <path d="M-72,-80 h56 v68 h10 q4,14 -6,14 h-68 q-8,0 -8,-10 z" fill="#3fae4a" stroke="${OL}" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M16,-80 h56 v70 q0,10 -8,10 h-68 q-10,0 -6,-14 h10 z" fill="#3fae4a" stroke="${OL}" stroke-width="7" stroke-linejoin="round"/>
+    <rect x="-82" y="-16" width="76" height="14" rx="6" fill="#2a7a33"/><rect x="6" y="-16" width="76" height="14" rx="6" fill="#2a7a33"/>
+    <!-- Jacke -->
+    <path d="M-80,-215 Q0,-232 80,-215 L108,-72 Q0,-52 -108,-72 Z" fill="#ffd23f" stroke="${OL}" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M40,-220 Q75,-216 80,-215 L108,-72 Q80,-66 55,-63 Z" fill="#e8b923"/>
+    <path d="M0,-222 L0,-62" stroke="${OL}" stroke-width="5"/>
+    <circle cx="-14" cy="-180" r="7" fill="${OL}"/><circle cx="-14" cy="-140" r="7" fill="${OL}"/><circle cx="-14" cy="-100" r="7" fill="${OL}"/>
+    <path d="M-80,-120 h40" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M40,-120 h40" stroke="${OL}" stroke-width="5" stroke-linecap="round"/>
+    ${arms}
+    <!-- Kapuze im Nacken -->
+    <ellipse cx="0" cy="-222" rx="105" ry="36" fill="#ffd23f" stroke="${OL}" stroke-width="8"/>
+    </g>
+    <g transform="translate(0,${bob})">
+    <!-- Kopf -->
+    <circle cx="0" cy="-345" r="150" fill="#ffd9b8" stroke="${OL}" stroke-width="8"/>
+    <!-- Haare -->
+    <path d="M-150,-350 Q-160,-500 0,-505 Q160,-500 150,-350 Q140,-400 110,-420 Q90,-385 60,-400 Q40,-370 10,-395 Q-20,-368 -45,-398 Q-80,-375 -100,-412 Q-135,-395 -150,-350 Z" fill="#5a3a22" stroke="${OL}" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M-30,-498 q10,-30 30,-35 q-5,20 8,30" fill="#5a3a22" stroke="${OL}" stroke-width="7" stroke-linejoin="round"/>
+    <!-- Stirnlampe -->
+    <path d="M-148,-440 Q0,-480 148,-440" fill="none" stroke="#222" stroke-width="22"/>
+    ${lampLight}
+    <rect x="-34" y="-482" width="68" height="52" rx="14" fill="#9aa3ad" stroke="${OL}" stroke-width="7"/>
+    <circle cx="0" cy="-456" r="17" fill="${lamp ? '#fff27a' : '#6d6d64'}" stroke="${OL}" stroke-width="5"/>
+    <!-- Gesicht -->
+    <ellipse cx="-95" cy="-285" rx="24" ry="14" fill="#ff8a8a" opacity=".55"/><ellipse cx="95" cy="-285" rx="24" ry="14" fill="#ff8a8a" opacity=".55"/>
+    ${eyes}${brows}${mouth}${extra}
+    </g>
+  </g>`;
+}
+
+// ===================== Schatten =====================
+function shadowEyes(x, y, s, open, t, ph = 0) {
+  // open: 0..1 (Aufgehen), plus Blinzeln
+  const blink = (Math.sin(t * 1.3 + ph * 3) > 0.985) ? 0.1 : 1;
+  const sy = open * blink;
+  if (sy <= 0.01) return '';
+  return `<g transform="translate(${x},${y}) scale(${s})" opacity="${clamp(open*1.2)}">
+    <g filter="url(#glow)">
+    <ellipse cx="-22" cy="0" rx="14" ry="${17 * sy}" fill="#fff27a" transform="rotate(12 -22 0)"/>
+    <ellipse cx="22" cy="0" rx="14" ry="${17 * sy}" fill="#fff27a" transform="rotate(-12 22 0)"/>
+    </g>
+    <ellipse cx="-20" cy="2" rx="4" ry="${7*sy}" fill="#1a1400"/><ellipse cx="20" cy="2" rx="4" ry="${7*sy}" fill="#1a1400"/>
+  </g>`;
+}
+function shadowBlob(x, y, s, t, op = .92, eyes = 1, ph = 0) {
+  const w = (k) => Math.sin(t * 4 + k + ph) * 10;
+  return `<g transform="translate(${x},${y}) scale(${s})" opacity="${op}">
+    <path d="M-90,40 Q-110,-120 0,-150 Q110,-120 90,40 Q70,${70 + w(1)} 45,${45 + w(2)} Q22,${80 + w(3)} 0,${48 + w(4)} Q-22,${80 + w(5)} -45,${45 + w(6)} Q-70,${70 + w(7)} -90,40 Z" fill="#0b0b18" stroke="#2c2350" stroke-width="5"/>
+    <path d="M-60,-60 Q-90,-110 -110,-100" stroke="#0b0b18" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M60,-60 Q95,-105 115,-90" stroke="#0b0b18" stroke-width="18" stroke-linecap="round" fill="none"/>
+    ${shadowEyes(0, -60, 1.3, eyes, t, ph)}
+  </g>`;
+}
+
+// ===================== Hintergründe =====================
+function sky(top, bottom, starsOp = 1, t = 0) {
+  let s = `<defs><linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient></defs>
+  <rect width="${W}" height="${H}" fill="url(#skyg)"/>`;
+  if (starsOp > 0) s += STARS.map(([x, y, r, p]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${starsOp * (.5 + .5 * Math.sin(t * 2 + p))}"/>`).join('');
+  return s;
+}
+function moon(x, y, r) {
+  return `<circle cx="${x}" cy="${y}" r="${r * 1.8}" fill="#cfd8ff" opacity=".12"/><circle cx="${x}" cy="${y}" r="${r}" fill="#e9edff" stroke="${OL}" stroke-width="6"/>
+  <circle cx="${x - r * .3}" cy="${y - r * .2}" r="${r * .18}" fill="#c9d0ee"/><circle cx="${x + r * .3}" cy="${y + r * .25}" r="${r * .12}" fill="#c9d0ee"/>`;
+}
+function building(x, yBase, w, h, col, roof = 'flat', winLit = []) {
+  let s = `<rect x="${x}" y="${yBase - h}" width="${w}" height="${h}" fill="${col}" stroke="${OL}" stroke-width="6"/>`;
+  if (roof === 'tri') s += `<path d="M${x - 10},${yBase - h} L${x + w / 2},${yBase - h - w * .45} L${x + w + 10},${yBase - h} Z" fill="${mixHex(col, '#000000', .25)}" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>`;
+  const cols = Math.max(1, Math.floor((w - 30) / 60)), rows = Math.max(1, Math.floor((h - 60) / 90));
+  let k = 0;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const wx = x + 25 + c * ((w - 50) / cols) + ((w - 50) / cols - 36) / 2, wy = yBase - h + 40 + r * 90;
+    const lit = winLit.includes(k++);
+    s += `<rect x="${wx}" y="${wy}" width="36" height="50" rx="4" fill="${lit ? '#fff27a' : '#141432'}" stroke="${OL}" stroke-width="4"/>`;
+    if (!lit) s += `<path d="M${wx + 18},${wy} v50 M${wx},${wy + 25} h36" stroke="${OL}" stroke-width="3"/>`;
+  }
+  return s;
+}
+function street(t) {
+  // Straße mit Häusern beidseitig + Fluchtpunkt
+  let s = '';
+  s += building(-40, 1300, 260, 700, '#2b2f63', 'tri');
+  s += building(200, 1240, 200, 560, '#3a2f6b', 'flat');
+  s += building(700, 1240, 200, 600, '#33306a', 'tri');
+  s += building(880, 1300, 260, 760, '#272b5c', 'flat');
+  s += building(380, 1150, 140, 380, '#24264f', 'tri');
+  s += building(560, 1150, 150, 420, '#2a2858', 'flat');
+  // Boden
+  s += `<path d="M0,1300 L380,1150 L700,1150 L1080,1300 L1080,1920 L0,1920 Z" fill="#1d1d3a"/>`;
+  s += `<path d="M420,1150 L660,1150 L900,1920 L180,1920 Z" fill="#26264a"/>`;
+  for (let i = 0; i < 6; i++) { const y = 1180 + i * i * 22 + i * 40, w = 8 + i * 6; s += `<rect x="${540 - w / 2}" y="${y}" width="${w}" height="${14 + i * 8}" fill="#4a4a7a" opacity=".7"/>`; }
+  // kaputte Laterne
+  s += `<path d="M150,1520 L150,1000 Q150,960 190,960 L250,960" fill="none" stroke="${OL}" stroke-width="22"/><path d="M150,1520 L150,1000 Q150,960 190,960 L250,960" fill="none" stroke="#3d3d5c" stroke-width="12"/>
+        <path d="M225,960 L275,960 L265,1000 L235,1000 Z" fill="#555577" stroke="${OL}" stroke-width="6"/><path d="M240,1000 l8,14 -6,8 8,12" stroke="#777" stroke-width="3" fill="none"/>`;
+  // Gassen-Augen
+  return s;
+}
+function lighthouse(x, y, s, lampOn = .3, t = 0) {
+  // Ursprung: Fuß. Höhe ~ 900*s
+  const stripes = [0, 1, 2, 3].map(i => {
+    const y0 = -120 - i * 170, y1 = y0 - 85;
+    const wb = lerp(150, 95, (-y0 - 120) / 680), wt = lerp(150, 95, (-y1 - 120) / 680);
+    return `<path d="M${-wb},${y0} L${-wt},${y1} L${wt},${y1} L${wb},${y0} Z" fill="#e23b3b"/>`;
+  }).join('');
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <path d="M-260,40 Q-240,-80 -120,-120 L120,-120 Q240,-80 260,40 Z" fill="#3b3550" stroke="${OL}" stroke-width="8"/>
+    <path d="M-150,-120 L-95,-800 L95,-800 L150,-120 Z" fill="#f4f1ea"/>
+    ${stripes}
+    <path d="M-150,-120 L-95,-800 L95,-800 L150,-120 Z" fill="none" stroke="${OL}" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M40,-800 L95,-800 L150,-120 L80,-120 Z" fill="#000" opacity=".12"/>
+    <path d="M-40,-120 L-40,-230 Q0,-270 40,-230 L40,-120 Z" fill="#4a2c1a" stroke="${OL}" stroke-width="7"/>
+    <circle cx="0" cy="-480" r="26" fill="${lampOn > .5 ? '#fff27a' : '#1d2a4a'}" stroke="${OL}" stroke-width="6"/>
+    <rect x="-130" y="-830" width="260" height="34" rx="6" fill="#2d2d44" stroke="${OL}" stroke-width="7"/>
+    <path d="M-120,-830 v-30 M-60,-830 v-30 M0,-830 v-30 M60,-830 v-30 M120,-830 v-30 M-125,-860 h250" stroke="${OL}" stroke-width="7"/>
+    <rect x="-80" y="-960" width="160" height="130" rx="8" fill="${lampOn > .05 ? mixHex('#3b4a6b', '#fff27a', lampOn) : '#3b4a6b'}" stroke="${OL}" stroke-width="8"/>
+    ${lampOn > .05 ? `<circle cx="0" cy="-895" r="${120 * lampOn}" fill="url(#lampglow)"/>` : ''}
+    <path d="M-27,-960 v130 M27,-960 v130" stroke="${OL}" stroke-width="6"/>
+    <path d="M-100,-960 Q0,-1060 100,-960 Z" fill="#e23b3b" stroke="${OL}" stroke-width="8" stroke-linejoin="round"/>
+    <circle cx="0" cy="-1035" r="12" fill="#e23b3b" stroke="${OL}" stroke-width="6"/>
+  </g>`;
+}
+function sea(y, t, col = 'url(#water)') {
+  let s = `<rect x="0" y="${y}" width="${W}" height="${H - y}" fill="${col}"/>`;
+  for (let i = 0; i < 6; i++) {
+    const yy = y + 40 + i * 70, off = (t * 40 + i * 90) % 200;
+    let d = `M${-200 + off},${yy}`;
+    for (let x = -200; x < W + 200; x += 100) d += ` q25,-12 50,0 q25,12 50,0`;
+    s += `<path d="${d}" fill="none" stroke="#5a78c0" stroke-width="4" opacity="${.35 - i * .03}"/>`;
+  }
+  return s;
+}
+function citySilhouette(y, col = '#151538', lit = []) {
+  const bl = [[0, 180, 220], [90, 120, 300], [200, 150, 200], [330, 100, 260], [420, 140, 180], [550, 120, 330], [660, 160, 210], [800, 110, 280], [900, 180, 230]];
+  return bl.map(([x, w, h], i) => `<rect x="${x}" y="${y - h}" width="${w}" height="${h + 5}" fill="${col}" stroke="${OL}" stroke-width="4"/>` +
+     (lit.includes(i) ? `<rect x="${x + w / 2 - 12}" y="${y - h + 40}" width="24" height="30" fill="#fff27a"/>` : '')).join('');
+}
+
+// ===================== HUD =====================
+function hud(t, opts = {}) {
+  const chips = [
+    ['👥', 'Mitbewohner', opts.mit ?? 1, 'mit'],
+    ['🔋', 'Batterie', opts.bat ?? 1, 'bat'],
+    ['🌙', 'Nacht', opts.nacht ?? 1, 'nacht'],
+  ];
+  const widths = [370, 290, 230], gap = 14;
+  let x = (W - (widths.reduce((a, b) => a + b) + gap * 2)) / 2, s = '';
+  chips.forEach(([em, label, val, key], i) => {
+    const w = widths[i];
+    let fill = 'rgba(10,10,30,.78)', stroke = '#fff', sc = 1;
+    if (opts.blink === key) {
+      const on = Math.sin(t * 14) > 0;
+      fill = on ? (opts.blinkCol || '#ffcc00') : 'rgba(10,10,30,.78)';
+      sc = 1 + (on ? .08 : 0);
+    }
+    if (opts.pop === key) sc = 1 + .25 * Math.max(0, Math.sin(clamp(opts.popT) * Math.PI));
+    const cx = x + w / 2, cy = 215;
+    const dark = opts.blink === key && Math.sin(t * 14) > 0 && !opts.blinkCol;
+    s += `<g transform="translate(${cx},${cy}) scale(${sc}) translate(${-cx},${-cy})">
+      <rect x="${x}" y="180" width="${w}" height="72" rx="36" fill="${fill}" stroke="${stroke}" stroke-width="4"/>
+      <text x="${x + 24}" y="230" font-size="38" class="emoji">${em}</text>
+      <text x="${x + 76}" y="230" font-size="34" fill="${dark ? '#1a1a2e' : '#fff'}">${label} <tspan fill="${dark ? '#1a1a2e' : '#ffd23f'}">${val}</tspan></text></g>`;
+    x += w + gap;
+  });
+  return s;
+}
+
+// ===================== Untertitel =====================
+let TIMING = null;
+const _mctx = document.createElement('canvas').getContext('2d');
+function measure(txt, fs) { _mctx.font = `900 ${fs}px "Inter Display"`; return _mctx.measureText(txt).width; }
+function captions(t) {
+  if (!TIMING) return '';
+  const words = TIMING.words;
+  // Gruppen von max. 3 Wörtern innerhalb eines Satzsegments
+  let groups = [], cur = [];
+  words.forEach((w, i) => {
+    if (cur.length && (cur.length >= 3 || cur[0].seg !== w.seg || /[.,:?!]$/.test(cur[cur.length - 1].w))) { groups.push(cur); cur = []; }
+    cur.push({...w, i});
+  });
+  if (cur.length) groups.push(cur);
+  const g = groups.find((gr, k) => t >= gr[0].t0 - .05 && t < (groups[k + 1] ? Math.min(groups[k + 1][0].t0 - .05, gr[gr.length - 1].t1 + .6) : gr[gr.length - 1].t1 + .6));
+  if (!g) return '';
+  const txt = w => w.w.replace(/[.,]$/, '').toUpperCase();
+  const fs = 92, y = 1560;
+  // Breite grob schätzen
+  const cw = w => measure(txt(w), fs) * 1.16 + 34;
+  let total = g.reduce((a, w) => a + cw(w), 0), scale = Math.min(1, 980 / total), x = W / 2 - total * scale / 2, s = '';
+  g.forEach(w => {
+    const active = t >= w.t0 - .03;
+    const isCur = active && (t < w.t1 || w === g[g.length - 1] || t < g[g.indexOf(w) + 1]?.t0);
+    const p = clamp((t - w.t0) / .12);
+    const sc = active ? (isCur ? lerp(1.2, 1.08, p) : 1) : 1;
+    const cx = x + cw(w) * scale / 2;
+    const col = isCur ? '#ffd23f' : '#ffffff';
+    s += `<g transform="translate(${cx},${y}) scale(${scale * sc})" opacity="${active ? 1 : .0}">
+      <text x="0" y="0" text-anchor="middle" font-size="${fs}" fill="${col}" stroke="#000" stroke-width="22" stroke-linejoin="round" paint-order="stroke" letter-spacing="1">${txt(w)}</text></g>`;
+    x += cw(w) * scale;
+  });
+  return s;
+}
+
+// ===================== Szenen =====================
+function cam(content, scale, ox, oy, rot = 0) {
+  return `<g transform="translate(${ox},${oy}) scale(${scale}) rotate(${rot}) translate(${-ox},${-oy})">${content}</g>`;
+}
+const SCENES = {
+  1(lt, d, t) { // dunkle Straße, Augen, Zoom auf Figur
+    const p = ease(clamp(lt / d));
+    let s = sky('#05061a', '#1b1846', 1, t) + moon(840, 360, 70) + street(t);
+    const eyeSpots = [[300, 1090, .9, 0], [610, 1060, .7, 1], [470, 1110, .6, 2], [960, 1180, 1.1, 3], [60, 1220, 1.1, 4], [760, 1100, .8, 5]];
+    s += eyeSpots.map(([x, y, sc, k]) => shadowEyes(x, y, sc, clamp((lt - .3 - k * .25) / .4), t, k)).join('');
+    s += boy({x: 540, y: 1500, s: .9, expr: 'sad', lamp: true, t});
+    const titleOp = clamp(1 - (lt - 2.2) / .4);
+    const out = cam(s, lerp(1, 1.32, p), 540, 1300);
+    const title = titleOp > 0 ? `<g opacity="${titleOp}"><rect x="190" y="300" width="700" height="84" rx="20" fill="#ffd23f" stroke="${OL}" stroke-width="7"/>
+      <text x="540" y="357" text-anchor="middle" font-size="40" fill="${OL}">FOLGE 1 · DER LETZTE LEUCHTTURM</text></g>` : '';
+    return out + `<rect width="${W}" height="${H}" fill="url(#vign)"/>` + title;
+  },
+  2(lt, d, t) { // Leuchtturm, leere Stadt
+    const p = ease(clamp(lt / d));
+    let s = sky('#070a24', '#2a2460', 1, t) + moon(200, 330, 55);
+    s += citySilhouette(1250, '#14143a');
+    s += sea(1250, t);
+    s += `<path d="M260,1560 Q300,1360 540,1330 Q800,1340 860,1560 Z" fill="#2c2840" stroke="${OL}" stroke-width="8"/>`;
+    s += lighthouse(560, 1420, .9, .15, t);
+    s += boy({x: 690, y: 1520, s: .42, expr: 'neutral', lamp: true, t});
+    // Leere: verlassene Sprechblasen-Hinweise „leer“
+    return cam(s, lerp(1.25, 1.0, p), 560, 1100) + `<rect width="${W}" height="${H}" fill="url(#vign)"/>`;
+  },
+  3(lt, d, t) { // Lichtkegel verscheucht Schatten
+    const p = clamp(lt / d);
+    let s = sky('#070a24', '#231f55', .8, t) + citySilhouette(1250, '#14143a') + sea(1250, t);
+    s += `<path d="M260,1560 Q300,1360 540,1330 Q800,1340 860,1560 Z" fill="#2c2840" stroke="${OL}" stroke-width="8"/>`;
+    const on = clamp(lt / .35);
+    const ang = lerp(-35, 215, ease(p)); // Grad, Kegel schwenkt
+    const lx = 560, ly = 1420 - 895 * .9;
+    const beam = `<g transform="translate(${lx},${ly}) rotate(${ang})" opacity="${on}"><path d="M0,-20 L1300,-260 L1300,260 L0,20 Z" fill="url(#beam)"/></g>`;
+    // Schatten an Positionen; fliehen, wenn Kegel sie trifft
+    const blobs = [[170, 900, 0], [900, 820, 1], [180, 1500, 2], [930, 1560, 3], [820, 1150, 4]];
+    let sb = '';
+    blobs.forEach(([bx, by, k]) => {
+      const a = Math.atan2(by - ly, bx - lx) * 180 / Math.PI;
+      let diff = ((ang - a) % 360 + 540) % 360 - 180;
+      // getroffen, sobald Kegel drüber war
+      const hitT = (() => { // grob: Zeitpunkt, an dem ang == a
+        let target = a; while (target < -35) target += 360; while (target > 215) target -= 360;
+        return target;
+      })();
+      const passed = ang > hitT ? clamp((ang - hitT) / 25) : 0;
+      const dirx = (bx - lx), diry = (by - ly), len = Math.hypot(dirx, diry);
+      const fx = bx + dirx / len * 400 * passed, fy = by + diry / len * 400 * passed;
+      sb += shadowBlob(fx, fy, .9 * (1 - .7 * passed), t, .92 * (1 - passed), 1, k);
+    });
+    s += sb + beam;
+    s += lighthouse(560, 1420, .9, .2 + .8 * on, t);
+    s += boy({x: 700, y: 1525, s: .45, expr: 'determined', lamp: true, t});
+    return cam(s, 1.05 + .05 * Math.sin(p * Math.PI), 540, 1000) + `<rect width="${W}" height="${H}" fill="url(#vign)"/>`;
+  },
+  4(lt, d, t) { // Nahaufnahme Taschenlampe + Batterie
+    const p = ease(clamp(lt / d));
+    let s = `<rect width="${W}" height="${H}" fill="#1a1530"/>`;
+    s += `<rect x="0" y="1150" width="${W}" height="770" fill="#5a3b26"/><path d="M0,1150 h${W}" stroke="${OL}" stroke-width="10"/>`;
+    for (let i = 0; i < 5; i++) s += `<path d="M0,${1220 + i * 140} h${W}" stroke="#4a301e" stroke-width="6"/>`;
+    s += `<ellipse cx="540" cy="1000" rx="520" ry="700" fill="url(#spot)"/>`;
+    // Taschenlampe (links, liegt schräg)
+    const fl = clamp(lt / .4);
+    s += `<g transform="translate(${lerp(-200, 300, easeOutBack(fl))},1110) rotate(-8)">
+      <rect x="-200" y="-55" width="300" height="110" rx="30" fill="#d94040" stroke="${OL}" stroke-width="9"/>
+      <path d="M100,-55 L200,-95 L200,95 L100,55 Z" fill="#c03535" stroke="${OL}" stroke-width="9" stroke-linejoin="round"/>
+      <ellipse cx="200" cy="0" rx="22" ry="95" fill="#d8e6f0" stroke="${OL}" stroke-width="8"/>
+      <rect x="-90" y="-72" width="60" height="22" rx="8" fill="#333" stroke="${OL}" stroke-width="6"/>
+      <path d="M-170,-30 h220" stroke="#fff" stroke-width="10" opacity=".35" stroke-linecap="round"/></g>`;
+    // Batterie (rechts, poppt bei „eine einzige Batterie“)
+    const seg = TIMING.segments.find(x => x.text.startsWith('Und eine einzige'));
+    const bt = clamp((t - seg.t0) / .45);
+    if (bt > 0) {
+      const sc = easeOutBack(bt);
+      s += `<g transform="translate(790,1020) scale(${sc}) rotate(${lerp(-30, 8, bt)})">
+        <circle r="210" fill="url(#lampglow)" opacity=".6"/>
+        <rect x="-70" y="-180" width="140" height="330" rx="28" fill="#2b2b2b" stroke="${OL}" stroke-width="9"/>
+        <rect x="-70" y="-180" width="140" height="120" rx="28" fill="#ffd23f" stroke="${OL}" stroke-width="9"/>
+        <rect x="-28" y="-210" width="56" height="34" rx="8" fill="#bfbfbf" stroke="${OL}" stroke-width="7"/>
+        <path d="M10,-20 L-25,50 L5,50 L-10,115 L35,30 L5,30 L25,-20 Z" fill="#ffd23f" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M-45,-160 v290" stroke="#fff" stroke-width="12" opacity=".25" stroke-linecap="round"/></g>
+        <g transform="translate(940,820) scale(${sc})"><circle r="70" fill="#ff3b3b" stroke="${OL}" stroke-width="8"/><text x="0" y="22" text-anchor="middle" font-size="64" fill="#fff">x1</text></g>`;
+    }
+    return cam(s, lerp(1, 1.18, p), 700, 1050);
+  },
+  5(lt, d, t) { // Batterie läuft runter = 1 Nacht
+    const p = clamp(lt / d);
+    let s = `<rect width="${W}" height="${H}" fill="#120f2a"/>` + STARS.slice(0, 30).map(([x, y, r, ph]) => `<circle cx="${x}" cy="${y + 300}" r="${r}" fill="#fff" opacity="${.3 + .3 * Math.sin(t * 2 + ph)}"/>`).join('');
+    // große liegende Batterie mit Ladebalken
+    const lvl = lerp(1, .08, ease(clamp(lt / (d * .9))));
+    const col = lvl > .5 ? '#5bd65b' : lvl > .25 ? '#ffd23f' : '#ff4040';
+    s += `<g transform="translate(540,900)">
+      <rect x="-330" y="-140" width="620" height="280" rx="40" fill="#22223a" stroke="#fff" stroke-width="14"/>
+      <rect x="290" y="-60" width="50" height="120" rx="12" fill="#fff"/>
+      <rect x="-300" y="-110" width="${560 * lvl}" height="220" rx="24" fill="${col}"/>
+      <text x="-20" y="35" text-anchor="middle" font-size="110" fill="#fff" stroke="${OL}" stroke-width="10" paint-order="stroke">${Math.round(lvl * 100)}%</text></g>`;
+    // Mond + Label
+    const ap = clamp((lt - .3) / .4);
+    s += `<g transform="translate(540,1230) scale(${easeOutBack(ap)})">
+      <rect x="-300" y="-70" width="600" height="140" rx="70" fill="#ffd23f" stroke="${OL}" stroke-width="9"/>
+      <text x="40" y="28" text-anchor="middle" font-size="76" fill="${OL}">= 1 NACHT</text>
+      <text x="-210" y="30" text-anchor="middle" font-size="80" class="emoji">🌙</text></g>`;
+    return cam(s, lerp(1, 1.1, ease(p)), 540, 1000);
+  },
+  6(lt, d, t, opt = {}) { // Platzhalter
+    const p = ease(clamp(lt / d));
+    let s = `<rect width="${W}" height="${H}" fill="#2a2148"/>`;
+    // Leuchtturm-Innenwand (runde Steine)
+    for (let r = 0; r < 14; r++) for (let c = 0; c < 7; c++) {
+      const x = c * 170 + (r % 2) * 85 - 60, y = 300 + r * 120;
+      s += `<rect x="${x}" y="${y}" width="160" height="110" rx="20" fill="#332a58" stroke="#211a3e" stroke-width="6"/>`;
+    }
+    s += `<rect x="0" y="1560" width="${W}" height="360" fill="#3d2a20"/><path d="M0,1560 h${W}" stroke="${OL}" stroke-width="10"/>`;
+    s += `<ellipse cx="540" cy="1000" rx="600" ry="800" fill="url(#spot)" opacity=".6"/>`;
+    // Platzhalter-Raster
+    const slots = [];
+    const cols = 4, rows = 3;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) slots.push([170 + c * 245, 560 + r * 270]);
+    const highlight = opt.highlight ?? -1;
+    slots.forEach(([x, y], i) => {
+      const ap = clamp((lt - i * .06) / .3);
+      if (ap <= 0) return;
+      const hl = i === highlight;
+      const pulse = hl ? 1 + .06 * Math.sin(t * 8) : 1;
+      s += `<g transform="translate(${x},${y}) scale(${easeOutBack(ap) * pulse})">
+        ${hl ? `<circle r="150" fill="url(#lampglow)"/>` : ''}
+        <path d="M-70,90 Q-70,20 0,20 Q70,20 70,90 Z" fill="${hl ? '#ffd23f' : 'rgba(255,255,255,.08)'}" stroke="${hl ? '#fff' : '#9b8fd0'}" stroke-width="6" stroke-dasharray="${hl ? '0' : '14 10'}"/>
+        <circle cx="0" cy="-35" r="52" fill="${hl ? '#ffd23f' : 'rgba(255,255,255,.08)'}" stroke="${hl ? '#fff' : '#9b8fd0'}" stroke-width="6" stroke-dasharray="${hl ? '0' : '14 10'}"/>
+        <text x="0" y="-12" text-anchor="middle" font-size="64" fill="${hl ? OL : '#c9c0f0'}">?</text></g>`;
+    });
+    if (highlight >= 0) {
+      const [hx, hy] = slots[highlight];
+      const lp = clamp((lt - .25) / .35);
+      s += `<g transform="translate(${hx},${hy - 175}) scale(${easeOutBack(lp)})">
+        <rect x="-150" y="-50" width="300" height="80" rx="18" fill="#ff3b6b" stroke="#fff" stroke-width="6"/>
+        <text x="0" y="8" text-anchor="middle" font-size="44" fill="#fff">DEIN PLATZ</text>
+        <path d="M-18,30 L0,58 L18,30 Z" fill="#ff3b6b" stroke="#fff" stroke-width="5" stroke-linejoin="round"/></g>`;
+      const lp2 = clamp((lt - .9) / .35);
+      s += `<g transform="translate(540,390) scale(${easeOutBack(lp2)})">
+        <rect x="-330" y="-55" width="660" height="100" rx="50" fill="#fff" stroke="${OL}" stroke-width="8"/>
+        <text x="0" y="16" text-anchor="middle" font-size="48" fill="${OL}">FOLLOW = EINZIEHEN</text></g>`;
+    }
+    s += boy({x: 230, y: 1565, s: .72, expr: opt.expr || 'hopeful', lamp: true, t, pose: opt.pose || 'down'});
+    const zx = highlight >= 0 ? slots[highlight][0] : 540, zy = highlight >= 0 ? slots[highlight][1] : 1000;
+    return cam(s, lerp(1, opt.zoom || 1.08, p), zx, zy);
+  },
+  7(lt, d, t) {
+    const out = SCENES[6](lt, d, t, {highlight: 6, expr: 'happy', pose: 'point', zoom: 1.12});
+    // +1 Hinweis
+    return out;
+  },
+  8(lt, d, t) { // Sonnenuntergang -> lila, Augen gehen an
+    const p = clamp(lt / d);
+    const k = ease(p);
+    const top = mixHex('#ff8a3d', '#2a0f4a', k), bot = mixHex('#ffd27a', '#7a2a8a', k);
+    let s = sky(top, bot, clamp((k - .5) * 2), t);
+    const sunY = lerp(1020, 1300, k);
+    s += `<circle cx="540" cy="${sunY}" r="${150}" fill="${mixHex('#ffe27a', '#ff5a3d', k)}" opacity="${1 - k * .5}"/>`;
+    s += sea(1250, t, mixHex('#3a3a7a', '#1a1040', k));
+    s += citySilhouette(1250, mixHex('#3a2a5a', '#120a28', k));
+    // Augen in der Stadt und im Wasser gehen nacheinander an
+    const eyes = [[120, 1100, .8], [930, 1060, .9], [400, 1150, .7], [700, 1120, .8], [250, 1210, .6], [840, 1200, .7], [560, 1060, .6], [60, 1260, 1]];
+    eyes.forEach(([x, y, sc], i) => { s += shadowEyes(x, y, sc, clamp((lt - .9 - i * .14) / .25), t, i); });
+    s += `<rect x="0" y="1480" width="${W}" height="440" fill="${mixHex('#4a3050', '#1d1430', k)}"/><path d="M0,1480 h${W}" stroke="${OL}" stroke-width="10"/>`;
+    s += boy({x: 540, y: 1500, s: .8, expr: lt > .9 ? 'scared' : 'neutral', lamp: true, t, shake: lt > .9 ? 4 : 0, pose: lt > 1.0 ? 'scared' : 'down', look: Math.sin(t * 2)});
+    return cam(s, lerp(1, 1.15, k), 540, 1400) + `<rect width="${W}" height="${H}" fill="url(#vign)"/>`;
+  },
+  9(lt, d, t) { // Optionen
+    let s = sky('#0a0620', '#2a0f4a', 1, t) + sea(1500, t, '#120a30');
+    // Augen ringsum
+    [[90, 420], [990, 520], [70, 1650], [1000, 1700], [160, 1880], [920, 400]].forEach(([x, y], i) => s += shadowEyes(x, y, .8, 1, t, i));
+    s += boy({x: 540, y: 820, s: .62, expr: 'scared', lamp: true, t, shake: 2, pose: 'scared', look: Math.sin(t * 1.5)});
+    // Frage
+    const q = TIMING.segments.find(x => x.text.startsWith('Was soll'));
+    const qp = clamp((t - q.t0 + .1) / .3);
+    s += `<g transform="translate(540,935) scale(${easeOutBack(qp)})"><text x="0" y="0" text-anchor="middle" font-size="88" fill="#fff" stroke="#000" stroke-width="18" paint-order="stroke">WAS SOLL ICH TUN?</text></g>`;
+    const opts = [['1', 'Licht an und durchhalten', '🔦', '#ffd23f'], ['2', 'Im Supermarkt Batterien suchen', '🛒', '#5bd6ff'], ['3', 'Den großen Scheinwerfer reparieren', '🔧', '#ff7ab0']];
+    opts.forEach(([n, label, em, col], i) => {
+      const seg = TIMING.segments.find(x => x.text.startsWith(n + ':'));
+      const ap = clamp((t - seg.t0 + .05) / .35);
+      if (ap <= 0) return;
+      const speaking = t >= seg.t0 && t < seg.t1;
+      const y = 1080 + i * 200, sc = easeOutBack(ap) * (speaking ? 1.04 : 1);
+      s += `<g transform="translate(540,${y}) scale(${sc})">
+        <rect x="-470" y="-80" width="940" height="160" rx="36" fill="${speaking ? col : '#fff'}" stroke="${OL}" stroke-width="9"/>
+        <circle cx="-375" cy="0" r="58" fill="${OL}"/><text x="-375" y="26" text-anchor="middle" font-size="76" fill="${col}">${n}</text>
+        <text x="-290" y="16" font-size="${Math.min(48, 48 * 620 / measure(label.toUpperCase(), 48))}" fill="${OL}">${label.toUpperCase()}</text>
+        <text x="395" y="24" text-anchor="middle" font-size="66" class="emoji">${em}</text></g>`;
+    });
+    const last = TIMING.segments[TIMING.segments.length - 1];
+    const cp = clamp((t - last.t1 - .1) / .35);
+    if (cp > 0) {
+      const pulse = 1 + .05 * Math.sin(t * 7);
+      s += `<g transform="translate(540,1700) scale(${easeOutBack(cp) * pulse})">
+        <rect x="-420" y="-62" width="840" height="124" rx="62" fill="#ff3b6b" stroke="#fff" stroke-width="7"/>
+        <text x="0" y="20" text-anchor="middle" font-size="54" fill="#fff">KOMMENTIERE 1, 2 ODER 3! 👇</text></g>`;
+    }
+    return s;
+  },
+};
+
+// ===================== Haupt-Render =====================
+window.setTiming = (tm) => { TIMING = tm; };
+window.renderAt = (t) => {
+  const sc = Object.entries(TIMING.scenes).find(([k, v]) => t >= v.start && t < v.end) || Object.entries(TIMING.scenes).slice(-1)[0];
+  const n = +sc[0], st = n === 1 ? 0 : sc[1].start, lt = t - st, d = sc[1].end - st;
+  let body = SCENES[n](lt, d, t);
+  // kurzer Schnitt-Pop
+  const pop = n > 1 ? clamp(lt / .18) : 1;
+  body = cam(body, lerp(1.05, 1, ease(pop)), 540, 960);
+  const hudOpts = {};
+  if (n === 4 || n === 5) { hudOpts.blink = 'bat'; if (n === 5) hudOpts.blinkCol = '#ff4040'; }
+  if (n === 7) { hudOpts.pop = 'mit'; hudOpts.popT = lt / .5; }
+  const flash = n > 1 && lt < .1 ? `<rect width="${W}" height="${H}" fill="#fff" opacity="${.25 * (1 - lt / .1)}"/>` : '';
+  document.getElementById('stage').innerHTML = DEFS + body + flash + hud(t, hudOpts) + (n === 9 ? '' : captions(t));
+};
+</script>
+</body></html>
